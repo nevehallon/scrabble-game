@@ -1,0 +1,128 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+div#frame {
+}
+
+div#board {
+  min-width: 400px;
+  max-width: 400px;
+  display: grid;
+  grid-template-rows: repeat(15, 27.5px);
+  grid-template-columns: repeat(15, 27.5px);
+  justify-content: center;
+
+  div.column {
+    position: relative;
+    border: 1px solid black;
+    border-radius: 5px;
+
+    div.tile {
+      width: 100%;
+      height: 100%;
+    }
+
+    span {
+      font-size: 12px;
+      font-weight: 900;
+    }
+  }
+
+  div.tw::before {
+    content: "TW";
+    font-size: 12px;
+    font-weight: 900;
+    position: absolute;
+    top: 3px;
+    left: 2px;
+    z-index: 0;
+  }
+
+  div.dl::before {
+    content: "DL";
+    font-size: 12px;
+    font-weight: 900;
+    position: absolute;
+    top: 3px;
+    left: 5px;
+    z-index: 0;
+  }
+
+  div.dw::before {
+    content: "DW";
+    font-size: 12px;
+    font-weight: 900;
+    position: absolute;
+    top: 3px;
+    left: 2px;
+    z-index: 0;
+  }
+
+  div.tl::before {
+    content: "TL";
+    font-size: 12px;
+    font-weight: 900;
+    position: absolute;
+    top: 3px;
+    left: 5px;
+    z-index: 0;
+  }
+}
+
+div#outer_rack {
+  img {
+    width: 365px;
+  }
+
+  div#rack {
+    height: 45px;
+    width: 100%;
+    position: relative;
+    bottom: 65px;
+    display: grid;
+    grid-template-columns: repeat(7, 42px);
+    gap: 5px;
+    justify-content: center;
+  }
+}
+
+div.tile {
+  position: relative;
+  cursor: grab;
+  background: wheat;
+  width: 42px;
+  height: 45px;
+  font-weight: bolder;
+  font-size: x-large;
+  box-shadow: inset 0px 0px 14px 0px;
+  border-radius: 3px;
+
+  div {
+    position: relative;
+    bottom: 6px;
+    left: 29px;
+    width: 1px;
+    height: 1px;
+    font-weight: bolder;
+    font-size: x-small;
+  }
+}
+
+div.tile:active {
+  margin: 0;
+  cursor: grabbing;
+}
+
+.ph-class {
+  background: transparent;
+  border: 1px dashed rgb(100, 150, 150);
+  width: 40px;
+}
+
+.ph-class2 {
+  background: transparent;
+  border: 1px dashed rgb(100, 150, 150);
+}

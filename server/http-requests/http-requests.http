@@ -1,0 +1,6 @@
+@path = http://localhost:3000
+
+GET {{path}}/wordFinder?letters=striead&numBlanks=0
+###
+GET {{path}}/wordTrieStr
+
