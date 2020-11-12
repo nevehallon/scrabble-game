@@ -4,6 +4,20 @@
   box-sizing: border-box;
 }
 
+div#frame::-webkit-scrollbar {
+  display: none;
+}
+
+div#frame {
+  clip-path: border-box;
+  overflow: scroll;
+  height: 412.5px;
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
 div#board {
   min-width: 400px;
   max-width: 400px;
@@ -16,19 +30,15 @@ div#board div.column {
   position: relative;
   border: 1px solid black;
   border-radius: 5px;
+  font-size: 12px;
+  font-weight: 900;
 }
 div#board div.column div.tile {
   width: 100%;
   height: 100%;
 }
-div#board div.column span {
-  font-size: 12px;
-  font-weight: 900;
-}
 div#board div.tw::before {
   content: "TW";
-  font-size: 12px;
-  font-weight: 900;
   position: absolute;
   top: 3px;
   left: 2px;
@@ -36,8 +46,6 @@ div#board div.tw::before {
 }
 div#board div.dl::before {
   content: "DL";
-  font-size: 12px;
-  font-weight: 900;
   position: absolute;
   top: 3px;
   left: 5px;
@@ -45,8 +53,6 @@ div#board div.dl::before {
 }
 div#board div.dw::before {
   content: "DW";
-  font-size: 12px;
-  font-weight: 900;
   position: absolute;
   top: 3px;
   left: 2px;
@@ -54,8 +60,6 @@ div#board div.dw::before {
 }
 div#board div.tl::before {
   content: "TL";
-  font-size: 12px;
-  font-weight: 900;
   position: absolute;
   top: 3px;
   left: 5px;
