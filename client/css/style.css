@@ -67,15 +67,15 @@ div#board div.tl::before {
 }
 
 div#outer_rack img {
-  width: 365px;
+  width: 412px;
 }
 div#outer_rack div#rack {
   height: 45px;
   width: 100%;
   position: relative;
-  bottom: 65px;
+  bottom: 75px;
   display: grid;
-  grid-template-columns: repeat(7, 42px);
+  grid-template-columns: repeat(7, 50px);
   gap: 5px;
   justify-content: center;
 }
@@ -84,21 +84,21 @@ div.tile {
   position: relative;
   cursor: grab;
   background: wheat;
-  width: 42px;
-  height: 45px;
+  width: 50px;
+  height: 55px;
   font-weight: bolder;
-  font-size: x-large;
+  font-size: xx-large;
   box-shadow: inset 0px 0px 14px 0px;
   border-radius: 3px;
 }
 div.tile div {
   position: relative;
-  bottom: 6px;
-  left: 29px;
+  bottom: 12px;
+  left: 32px;
   width: 1px;
   height: 1px;
   font-weight: bolder;
-  font-size: x-small;
+  font-size: small;
 }
 
 div.tile:active {

@@ -5,6 +5,7 @@ import gridState from "./createGrid.js";
 let lettersUsed = 0;
 let isZoomed = false;
 let fired = false;
+let overRack = false;
 
 const bag = _.shuffle(_.shuffle(letters));
 let rivalRack = [];
@@ -35,7 +36,31 @@ function startGame() {
   resetSortable();
 }
 
+function zoomOut() {
+  $("#board")
+    .css({
+      height: "412.5px",
+      width: "400px",
+      "grid-template-columns": "repeat(15, 27.5px)",
+      "grid-template-rows": "repeat(15, 27.5px)",
+      "justify-content": "center",
+      margin: "0 auto",
+    })
+    .find(".tile")
+    .css({
+      "font-size": "medium",
+    })
+    .children("div")
+    .css({
+      bottom: "9px",
+      left: "16px",
+      "font-size": "8px",
+    });
+  isZoomed = false;
+}
+
 $("#startGame").click(startGame);
+$("#zoomOut").click(zoomOut);
 
 function setDraggable(x) {
   x.draggable({
@@ -54,8 +79,6 @@ function setDraggable(x) {
           ui.helper.offset(ui.helper.data("original-position"));
         }
 
-      $("#rack .tile").css({ left: "0", top: "0" });
-
       removeDuplicates();
 
       console.count(); //repaint Game/Grid State here
@@ -69,26 +92,12 @@ function resetSortable() {
     scroll: false,
     tolerance: "intersect",
     revert: 200,
-    out: function (ev, ui) {
-      fired = false;
+    out: function (event, ui) {
+      overRack = false;
     },
     over: function (event, ui) {
+      overRack = true;
       fired = false;
-    },
-    receive: function (event, ui) {
-      fired = false;
-      $(ui.item)
-        .css({
-          height: "45px",
-          width: "42px",
-          "font-size": "x-large",
-        })
-        .children("div")
-        .css({
-          left: "29px",
-          bottom: "6px",
-          "font-weight": "bolder",
-        });
     },
   });
   $("#rack").disableSelection();
@@ -98,8 +107,9 @@ $(".column").droppable({
   accept: ".tile",
   tolerance: "intersect",
   drop: function (ev, ui) {
-    if (!fired) {
+    if (!fired || overRack) {
       fired = true;
+      if (!overRack) $(".tile").css({ left: "0", top: "0" });
       return;
     }
 
@@ -111,10 +121,6 @@ $(".column").droppable({
     let tileClone = $(ui.draggable);
     $(this).append(tileClone);
 
-    // $(ui.draggable).remove();
-    // setTimeout(function () {
-    //   $(ui.draggable).remove();
-    // }, 5);
     removeDuplicates();
 
     setDraggable(tileClone);
@@ -122,24 +128,14 @@ $(".column").droppable({
       position: "relative",
       left: "0",
       top: "0",
-      // height: "53px",
-      // width: "53px",
-      // "font-size": "15px",
     });
-    // .children("div")
-    // .css({
-    //   left: "15px",
-    //   bottom: "10px",
-    //   "font-weight": "600",
-    //   padding: "1px",
-    // });
 
     if (!isZoomed) {
       $("#board").css({
         height: "705px",
         width: "640px",
-        "grid-template-rows": "repeat(15, 47px)",
-        "grid-template-columns": "repeat(15, 44px)",
+        "grid-template-columns": "repeat(15, 52px)",
+        "grid-template-rows": "repeat(15, 57px)",
         "justify-content": "safe center",
         margin: "0",
       });
