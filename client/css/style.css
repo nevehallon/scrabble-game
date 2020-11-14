@@ -34,8 +34,8 @@ div#board div.column {
   font-weight: 900;
 }
 div#board div.column div.tile {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
 }
 div#board div.tw::before {
   content: "TW";
@@ -78,6 +78,18 @@ div#outer_rack div#rack {
   grid-template-columns: repeat(7, 50px);
   gap: 5px;
   justify-content: center;
+}
+div#outer_rack div#rack div.tile {
+  width: 50px !important;
+  height: 55px !important;
+  font-weight: bolder !important;
+  font-size: xx-large !important;
+}
+div#outer_rack div#rack div.tile div {
+  bottom: 12px !important;
+  left: 32px !important;
+  font-weight: bolder !important;
+  font-size: small !important;
 }
 
 div.tile {

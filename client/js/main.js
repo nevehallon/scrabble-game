@@ -1,6 +1,6 @@
 import letters from "./scrabbleLetters.js";
 import { getWordTrieStr, getPossibleWords, getWordValues } from "./getRequests.js";
-import gridState from "./createGrid.js";
+import { gridState, updateGameState } from "./createGrid.js";
 
 let lettersUsed = 0;
 let isZoomed = false;
@@ -10,7 +10,7 @@ let overRack = false;
 const bag = _.shuffle(_.shuffle(letters));
 let rivalRack = [];
 
-// console.log(JSON.stringify(gridState));
+console.log(JSON.stringify(gridState));
 console.log(gridState);
 
 getWordTrieStr();
@@ -36,17 +36,25 @@ function startGame() {
   resetSortable();
 }
 
-function zoomOut() {
-  $("#board")
+function bigTile(tile) {
+  tile
     .css({
-      height: "412.5px",
-      width: "400px",
-      "grid-template-columns": "repeat(15, 27.5px)",
-      "grid-template-rows": "repeat(15, 27.5px)",
-      "justify-content": "center",
-      margin: "0 auto",
+      width: "50px",
+      height: "55px",
+      "font-weight": "bolder",
+      "font-size": "xx-large",
     })
-    .find(".tile")
+    .children("div")
+    .css({
+      bottom: "12px",
+      left: "32px",
+      "font-weight": "bolder",
+      "font-size": "small",
+    });
+}
+
+function smallTile(tile) {
+  tile
     .css({
       "font-size": "medium",
     })
@@ -56,11 +64,41 @@ function zoomOut() {
       left: "16px",
       "font-size": "8px",
     });
+}
+
+function zoomIn(elm) {
+  if (!isZoomed) {
+    $("#board").css({
+      height: "705px",
+      width: "640px",
+      "grid-template-columns": "repeat(15, 52px)",
+      "grid-template-rows": "repeat(15, 57px)",
+      "justify-content": "safe center",
+      margin: "0",
+    });
+    bigTile($("#board .tile"));
+    isZoomed = true;
+    if (elm) elm.scrollIntoView({ block: "center", inline: "center" });
+  }
+}
+
+function zoomOut() {
+  if (!isZoomed) return;
+  $("#board").css({
+    height: "412.5px",
+    width: "400px",
+    "grid-template-columns": "repeat(15, 27.5px)",
+    "grid-template-rows": "repeat(15, 27.5px)",
+    "justify-content": "center",
+    margin: "0 auto",
+  });
+  smallTile($("#board .tile"));
   isZoomed = false;
 }
 
 $("#startGame").click(startGame);
 $("#zoomOut").click(zoomOut);
+$("#board .column").dblclick((e) => (isZoomed ? zoomOut() : zoomIn(e.target)));
 
 function setDraggable(x) {
   x.draggable({
@@ -82,6 +120,8 @@ function setDraggable(x) {
       removeDuplicates();
 
       console.count(); //repaint Game/Grid State here
+      updateGameState();
+      console.log(JSON.stringify(gridState.gridLetters));
     },
   });
 }
@@ -94,10 +134,13 @@ function resetSortable() {
     revert: 200,
     out: function (event, ui) {
       overRack = false;
+      if (isZoomed) return;
+      smallTile(ui.item);
     },
     over: function (event, ui) {
       overRack = true;
       fired = false;
+      bigTile(ui.item);
     },
   });
   $("#rack").disableSelection();
@@ -130,17 +173,7 @@ $(".column").droppable({
       top: "0",
     });
 
-    if (!isZoomed) {
-      $("#board").css({
-        height: "705px",
-        width: "640px",
-        "grid-template-columns": "repeat(15, 52px)",
-        "grid-template-rows": "repeat(15, 57px)",
-        "justify-content": "safe center",
-        margin: "0",
-      });
-      isZoomed = true;
-    }
+    zoomIn();
     tileClone[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
   },
 });

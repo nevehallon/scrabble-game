@@ -33,8 +33,8 @@ div#board {
     font-weight: 900;
 
     div.tile {
-      width: 100%;
-      height: 100%;
+      width: 100% !important;
+      height: 100% !important;
     }
   }
 
@@ -85,6 +85,20 @@ div#outer_rack {
     grid-template-columns: repeat(7, 50px);
     gap: 5px;
     justify-content: center;
+
+    div.tile {
+      width: 50px !important;
+      height: 55px !important;
+      font-weight: bolder !important;
+      font-size: xx-large !important;
+
+      div {
+        bottom: 12px !important;
+        left: 32px !important;
+        font-weight: bolder !important;
+        font-size: small !important;
+      }
+    }
   }
 }
 
