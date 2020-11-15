@@ -12,7 +12,7 @@ function createGrid() {
       let $element = document.querySelectorAll(".column")[count];
       // console.log($element);
       $element.setAttribute("data-location", `${i},${j}`);
-      gridLetters[i].push("");
+      gridLetters[i].push(" ");
       // prettier-ignore
       gridMultipliers[i].push(
                 $($element).hasClass("tw") ? 
@@ -44,7 +44,9 @@ function updateGameState() {
       let letter;
       if ($($element).find(".tile").html()) letter = $($element).find(".tile").html().slice(0, 1);
       // prettier-ignore
-      gridLetters[i].push(letter ? letter : "");
+      let id = letter ? $($element).find(".tile").attr("data-drag") : " ";
+      let pointVal = letter ? $($element).find(".tile div").html() : " ";
+      gridLetters[i].push(letter ? { letter, id, pointVal } : { letter: " " });
       ++count;
     }
   }

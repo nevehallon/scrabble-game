@@ -1,6 +1,7 @@
 import letters from "./scrabbleLetters.js";
 import { getWordTrieStr, getPossibleWords, getWordValues } from "./getRequests.js";
 import { gridState, updateGameState } from "./createGrid.js";
+import validate from "./boardValidator.js";
 
 let lettersUsed = 0;
 let isZoomed = false;
@@ -121,7 +122,8 @@ function setDraggable(x) {
 
       console.count(); //repaint Game/Grid State here
       updateGameState();
-      console.log(JSON.stringify(gridState.gridLetters));
+      // console.log(JSON.stringify(gridState.gridLetters));
+      validate(gridState.gridLetters, true);
     },
   });
 }
