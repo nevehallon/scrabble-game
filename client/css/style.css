@@ -9,7 +9,6 @@ div#frame::-webkit-scrollbar {
 }
 
 div#frame {
-  clip-path: border-box;
   overflow: scroll;
   height: 412.5px;
   -ms-overflow-style: none;

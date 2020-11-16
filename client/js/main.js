@@ -7,6 +7,8 @@ let lettersUsed = 0;
 let isZoomed = false;
 let fired = false;
 let overRack = false;
+let firstTurn = true;
+let isValidMove = false;
 
 const bag = _.shuffle(_.shuffle(letters));
 let rivalRack = [];
@@ -24,7 +26,7 @@ function startGame() {
     let { letter, points } = _.pullAt(bag, [0])[0];
     console.log(letter, points);
     $(`#rack`).append(`
-        <div data-drag=${i} class="tile">${letter}<div>${points ? points : ""}</div></div>
+        <div data-drag=${i} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
         `);
     setDraggable($(`[data-drag="${i}"]`));
   }
@@ -97,6 +99,51 @@ function zoomOut() {
   isZoomed = false;
 }
 
+function swap() {
+  console.log("Swap");
+  //show player's letters and ask which letters to swap
+
+  //->if cancel
+  //    close modal and return
+
+  //->if confirm
+  //    remove chosen letters
+  //    pick new letters in exchange and place them on player's rack
+  //    take chosen letters and insert in to bag
+}
+
+function mix() {
+  console.log("mix letters");
+}
+
+function recall() {
+  console.log("Recall");
+  //remove all "hot" tiles from ".column .hot" and re-add them to player's rack
+  //trigger draggable "stop" in order to update game's state
+}
+
+function play() {
+  if (isValidMove !== true) return alert(isValidMove);
+  console.log("word played");
+  //calculate and add points to respective "player"
+  //remove "hot" class from ".column .hot" and call pass()
+}
+
+function pass(wasClicked = false) {
+  console.log("turn passed");
+  //if param = true ->
+  //    add to passCount
+  //if passCount = 4 ->
+  //    end game
+  //if param = false ->
+  //    make sure firstTurn is set to false
+  //    reset passCount to equal 0
+  //    allow next turn
+}
+
+$("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
+$("#swapRecall").click(() => ($("#swapRecall").text() == "Swap" ? swap() : recall()));
+$("#passPlay").click(() => ($("#passPlay").text() == "Play" ? play() : pass(true)));
 $("#startGame").click(startGame);
 $("#zoomOut").click(zoomOut);
 $("#board .column").dblclick((e) => (isZoomed ? zoomOut() : zoomIn(e.target)));
@@ -123,7 +170,7 @@ function setDraggable(x) {
       console.count(); //repaint Game/Grid State here
       updateGameState();
       // console.log(JSON.stringify(gridState.gridLetters));
-      validate(gridState.gridLetters, true);
+      isValidMove = validate(gridState.gridLetters, firstTurn);
     },
   });
 }

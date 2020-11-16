@@ -1,50 +1,78 @@
+import Trie from "../src/trie-prefix-tree/index.js";
 function zip(arrays) {
   return arrays[0].map((_, i) => arrays.map((array) => array[i]));
 }
 
-function validate(board, firstTurn = false) {
-  if (firstTurn && !board[7][7].letter.trim()) {
-    return console.log("Error: Your word must touch an existing word or the center star");
-  }
-  let matrix = board.map((row) => row.map((obj) => obj.letter));
-  let idMatrix = board.map((row) => row.map((obj) => obj.id));
+function isHot() {
+  $("#passPlay").text("Play");
+  $("#swapRecall").text("Recall");
+}
 
-  let rows = matrix.map((row) => row.join(""));
-  let columns = zip(matrix).map((column) => column.join(""));
+function isNot() {
+  $("#passPlay").text("Pass");
+  $("#swapRecall").text("Swap");
+}
 
-  let idRows = idMatrix.map((row) => row.join(""));
-  let idColumns = zip(idMatrix).map((column) => column.join(""));
+function validate(board, firstTurn) {
+  try {
+    !$(".column .hot").length ? isNot() : isHot();
+    if (firstTurn && !board[7][7].letter.trim()) {
+      throw "Error: Your word must touch an existing word or the center star";
+    }
+    let matrix = board.map((row) => row.map((obj) => obj.letter));
+    let idMatrix = board.map((row) => row.map((obj) => obj.id));
+    let hotMatrix = board.map((row) => row.map((obj) => obj.hot));
 
-  let ids = [];
-  let words = [];
-  let allLetters = [];
+    let rows = matrix.map((row) => row.join(""));
+    let columns = zip(matrix).map((column) => column.join(""));
 
-  [...rows, ...columns].map((line) =>
-    line.split(" ").map((word) => {
-      if (word.length > 0) allLetters.push(word);
-      if (word.length > 1) return words.push(word);
-    })
-  );
+    let idRows = idMatrix.map((row) => row.join(""));
+    let idColumns = zip(idMatrix).map((column) => column.join(""));
 
-  [...idRows, ...idColumns].map((line) =>
-    line.split(" ").map((id) => {
-      if (id.length > 1) return ids.push(id);
-      if (firstTurn && id.length && !ids.length) return ids.push(id);
-    })
-  );
+    let hotRows = hotMatrix.map((row) => row.join(""));
+    let hotColumns = zip(hotMatrix).map((column) => column.join(""));
 
-  if (allLetters.length == 2) {
+    let ids = [];
+    let words = [];
+    let hotLetters = [];
+
+    [...rows, ...columns].map((line) =>
+      line.split(" ").map((word) => {
+        if (word.length > 1) return words.push(word);
+      })
+    );
+
+    [...idRows, ...idColumns].map((line) =>
+      line.split(" ").map((id) => {
+        if (ids.includes(id) && id !== board[7][7].id.trim()) {
+          throw "(37) The letters you play must lie on the same row or column, and must be connected to each other";
+        }
+        if (id.length > 0) return ids.push(id);
+      })
+    );
+
+    [...hotRows, ...hotColumns].map((line) =>
+      line.split(" ").map((bool) => {
+        if (hotLetters.length > 1) {
+          throw "(47) The letters you play must lie on the same row or column, and must be connected to each other";
+        }
+        if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
+      })
+    );
+
+    if (ids.length == 2) throw `Word must contain at least two letters`;
     //check word validity
     //   return trie.hasWord(allLetters[0])
+    console.log(words);
+    words.forEach((word) => {
+      if (!Trie().hasWord(word)) throw `The word: '${word}' is INVALID `;
+    });
+    return true;
+  } catch (error) {
+    // TODO: alert user
+    console.error(error);
+    return error;
   }
-  //   if (words[0].length == 1 && board[7][7].id.trim() !== ids[0]) {
-  //     ids.shift();
-  //     words.shift();
-  //     // return console.log("Error: Your word must touch an existing word or the center star");
-  //   }
-  console.log(words);
-  console.log(allLetters);
-  //   console.log(ids);
 }
 
 export default validate;

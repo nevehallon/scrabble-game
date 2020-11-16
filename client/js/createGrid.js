@@ -42,11 +42,14 @@ function updateGameState() {
       let $element = document.querySelectorAll(".column")[count];
       // console.log($element);
       let letter;
-      if ($($element).find(".tile").html()) letter = $($element).find(".tile").html().slice(0, 1);
+      if ($($element).find(".tile").html()) {
+        letter = $($element).find(".tile").html().slice(0, 1);
+      }
       // prettier-ignore
+      let hot = letter ? $($element).find(".tile").hasClass("hot") : " ";
       let id = letter ? $($element).find(".tile").attr("data-drag") : " ";
       let pointVal = letter ? $($element).find(".tile div").html() : " ";
-      gridLetters[i].push(letter ? { letter, id, pointVal } : { letter: " " });
+      gridLetters[i].push(letter ? { letter, id, pointVal, hot } : { letter: " ", id, pointVal });
       ++count;
     }
   }
