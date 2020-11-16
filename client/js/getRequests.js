@@ -3,51 +3,50 @@ import letters from "./letterToPoints.js";
 let localWordTrieStr;
 
 async function getWordTrieStr() {
-    try {
-        let { data: { wordTrieStr } } = await axios.get(`http://localhost:3000/wordTrieStr`);
-        localWordTrieStr = localStorage.getItem('wordTrieStr') || wordTrieStr;
-        localStorage.setItem('wordTrieStr', localWordTrieStr);
-    } catch (error) {
-        console.error(error);
-    }
+  try {
+    let {
+      data: { wordTrieStr },
+    } = await axios.get(`http://localhost:3000/wordTrieStr`);
+    localWordTrieStr = localStorage.getItem("wordTrieStr") || wordTrieStr;
+    localStorage.setItem("wordTrieStr", localWordTrieStr);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function getPossibleWords(str, numBlanks = 0) {
-    try {
-        return await axios.get(`http://localhost:3000/wordFinder?letters=${str}&numBlanks=${numBlanks}`);
-    } catch (error) {
-        console.error(error);
-    }
+  try {
+    return await axios.get(`http://localhost:3000/wordFinder?letters=${str}&numBlanks=${numBlanks}`);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function getWordValues() {
-    let result = [];
-    
-    try {
-        let { data: { wordsFound } } = await getPossibleWords('striea', 2);
+  let result = [];
 
-        wordsFound.forEach(word => {
-            result.push({
-                word,
-                points: [...word].reduce((accumulator, currentVal) => {
-                    return accumulator + letters.find(l => l.letter == currentVal.toUpperCase()).points;
-                }, 0)
-            });
-        });
+  try {
+    let {
+      data: { wordsFound },
+    } = await getPossibleWords("striea", 2);
 
-        let wordsByValue = _.orderBy(result, ['points', 'word'], ['desc']); 
+    wordsFound.forEach((word) => {
+      result.push({
+        word,
+        points: [...word].reduce((accumulator, currentVal) => {
+          return accumulator + letters.find((l) => l.letter == currentVal.toUpperCase()).points;
+        }, 0),
+      });
+    });
 
-        console.log(wordsByValue); //TODO delete log!
+    let wordsByValue = _.orderBy(result, ["points", "word"], ["desc"]);
 
-        return wordsByValue;
+    console.log(wordsByValue); //TODO delete log!
 
-    } catch (error) {
-        console.error(error);
-    }
+    return wordsByValue;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
-export {
-    getWordTrieStr,
-    getPossibleWords,
-    getWordValues
-};
+export { getWordTrieStr, getPossibleWords, getWordValues };

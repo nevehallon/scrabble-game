@@ -61,15 +61,15 @@ function validate(board, firstTurn) {
     );
 
     if (ids.length == 2) throw `Word must contain at least two letters`;
-    //check word validity
-    //   return trie.hasWord(allLetters[0])
+
     console.log(words);
+
     words.forEach((word) => {
       if (!Trie().hasWord(word)) throw `The word: '${word}' is INVALID `;
+      //check words validity
     });
     return true;
   } catch (error) {
-    // TODO: alert user
     console.error(error);
     return error;
   }

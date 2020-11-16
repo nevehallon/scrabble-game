@@ -6,6 +6,7 @@ import validate from "./boardValidator.js";
 let lettersUsed = 0;
 let isZoomed = false;
 let fired = false;
+let triggered = false;
 let overRack = false;
 let firstTurn = true;
 let isValidMove = false;
@@ -113,17 +114,32 @@ function swap() {
 }
 
 function mix() {
-  console.log("mix letters");
+  if (!$("#rack .tile").length) return;
+  let shuffledRack = _.shuffle($("#rack .tile").toArray());
+  $("#rack .tile").remove();
+  shuffledRack.forEach((tile) => {
+    $("#rack").append(tile);
+    setDraggable($(tile));
+  });
 }
 
 function recall() {
+  if (!$(".column .hot").length) return;
   console.log("Recall");
   //remove all "hot" tiles from ".column .hot" and re-add them to player's rack
+  let toBeRecalled = $(".column .hot").toArray();
+  $(".column .hot").remove();
+  toBeRecalled.forEach((tile) => {
+    $("#rack").append(tile);
+    setDraggable($(tile));
+  });
   //trigger draggable "stop" in order to update game's state
+  triggered = true;
+  $("#rack .tile:first").trigger("dragstop");
 }
 
 function play() {
-  if (isValidMove !== true) return alert(isValidMove);
+  if (isValidMove !== true) return alert(isValidMove); //TODO: make into modal alert
   console.log("word played");
   //calculate and add points to respective "player"
   //remove "hot" class from ".column .hot" and call pass()
@@ -159,19 +175,21 @@ function setDraggable(x) {
       ui.helper.data("rejected", false);
       ui.helper.data("original-position", ui.helper.offset());
     },
-    stop: function (event, ui) {
-      if (ui && ui.helper)
-        if (ui.helper.data("rejected") === true) {
-          ui.helper.offset(ui.helper.data("original-position"));
-        }
+  });
+  x.on("dragstop", function (event, ui) {
+    if (!triggered) return (triggered = true);
+    if (ui && ui.helper)
+      if (ui.helper.data("rejected") === true) {
+        ui.helper.offset(ui.helper.data("original-position"));
+      }
 
-      removeDuplicates();
+    removeDuplicates();
 
-      console.count(); //repaint Game/Grid State here
-      updateGameState();
-      // console.log(JSON.stringify(gridState.gridLetters));
-      isValidMove = validate(gridState.gridLetters, firstTurn);
-    },
+    console.count(); //repaint Game/Grid State here
+    updateGameState();
+    // console.log(JSON.stringify(gridState.gridLetters));
+    isValidMove = validate(gridState.gridLetters, firstTurn);
+    triggered = false;
   });
 }
 
