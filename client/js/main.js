@@ -6,7 +6,7 @@ import validate from "./boardValidator.js";
 let lettersUsed = 0;
 let isZoomed = false;
 let fired = false;
-let triggered = false;
+// let triggered = false;
 let overRack = false;
 let firstTurn = true;
 let isValidMove = false;
@@ -40,6 +40,13 @@ function startGame() {
   resetSortable();
 }
 
+function repaintBoard() {
+  setTimeout(() => {
+    updateGameState();
+    // console.log(JSON.stringify(gridState.gridLetters));
+    isValidMove = validate(gridState, firstTurn);
+  }, 0);
+}
 function bigTile(tile) {
   tile
     .css({
@@ -134,8 +141,7 @@ function recall() {
     setDraggable($(tile));
   });
   //trigger draggable "stop" in order to update game's state
-  triggered = true;
-  $("#rack .tile:first").trigger("dragstop");
+  repaintBoard();
 }
 
 function play() {
@@ -175,21 +181,17 @@ function setDraggable(x) {
       ui.helper.data("rejected", false);
       ui.helper.data("original-position", ui.helper.offset());
     },
-  });
-  x.on("dragstop", function (event, ui) {
-    if (!triggered) return (triggered = true);
-    if (ui && ui.helper)
-      if (ui.helper.data("rejected") === true) {
-        ui.helper.offset(ui.helper.data("original-position"));
-      }
+    stop: function (event, ui) {
+      if (ui && ui.helper)
+        if (ui.helper.data("rejected") === true) {
+          ui.helper.offset(ui.helper.data("original-position"));
+        }
 
-    removeDuplicates();
+      removeDuplicates();
 
-    console.count(); //repaint Game/Grid State here
-    updateGameState();
-    // console.log(JSON.stringify(gridState.gridLetters));
-    isValidMove = validate(gridState.gridLetters, firstTurn);
-    triggered = false;
+      console.count(); //repaintBoard Game/Grid State here
+      repaintBoard();
+    },
   });
 }
 

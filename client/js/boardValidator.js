@@ -13,7 +13,8 @@ function isNot() {
   $("#swapRecall").text("Swap");
 }
 
-function validate(board, firstTurn) {
+function validate(gridState, firstTurn) {
+  let { gridLetters: board, gridMultipliers: multiplierMatrix } = gridState;
   try {
     !$(".column .hot").length ? isNot() : isHot();
     if (firstTurn && !board[7][7].letter.trim()) {
@@ -31,6 +32,9 @@ function validate(board, firstTurn) {
 
     let hotRows = hotMatrix.map((row) => row.join(""));
     let hotColumns = zip(hotMatrix).map((column) => column.join(""));
+
+    let multiRows = multiplierMatrix.map((row) => row.join(""));
+    let multiColumns = zip(multiplierMatrix).map((column) => column.join(""));
 
     let ids = [];
     let words = [];

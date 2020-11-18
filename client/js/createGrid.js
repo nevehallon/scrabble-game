@@ -23,7 +23,7 @@ function createGrid() {
                 "tl" :
                 $($element).hasClass("dl") ?
                 "dl" : 
-                1
+                " "
             );
       ++count;
     }
