@@ -20,27 +20,55 @@ function validate(gridState, firstTurn) {
     if (firstTurn && !board[7][7].letter.trim()) {
       throw "Error: Your word must touch an existing word or the center star";
     }
-    let matrix = board.map((row) => row.map((obj) => obj.letter));
-    let idMatrix = board.map((row) => row.map((obj) => obj.id));
-    let hotMatrix = board.map((row) => row.map((obj) => obj.hot));
 
-    let rows = matrix.map((row) => row.join(""));
-    let columns = zip(matrix).map((column) => column.join(""));
+    let letter = board.map((row) => row.map((obj) => obj.letter));
+    let id = board.map((row) => row.map((obj) => obj.id));
+    let hot = board.map((row) => row.map((obj) => obj.hot));
+    let pointVal = board.map((row) => row.map((obj) => obj.pointVal));
+    let multiplier = multiplierMatrix;
 
-    let idRows = idMatrix.map((row) => row.join(""));
-    let idColumns = zip(idMatrix).map((column) => column.join(""));
+    let fullMatrix = {
+      letterRows: letter,
+      idRows: id,
+      hotRows: hot,
+      pointValRows: pointVal,
+      multiplierRows: multiplier,
+    };
 
-    let hotRows = hotMatrix.map((row) => row.join(""));
-    let hotColumns = zip(hotMatrix).map((column) => column.join(""));
+    let fullMatrixZip = {
+      letterColumns: zip(letter),
+      idColumns: zip(id),
+      hotColumns: zip(hot),
+      pointValColumns: zip(pointVal),
+      multiplierColumns: zip(multiplier),
+    };
+    console.log(fullMatrix, fullMatrixZip);
 
-    let multiRows = multiplierMatrix.map((row) => row.join(""));
-    let multiColumns = zip(multiplierMatrix).map((column) => column.join(""));
+    let { letterRows, idRows, hotRows, pointValRows, multiplierRows } = fullMatrix;
+    let { letterColumns, idColumns, hotColumns, pointValColumns, multiplierColumns } = fullMatrixZip;
 
-    let ids = [];
+    letterRows = letterRows.map((row) => row.join(""));
+    letterColumns = letterColumns.map((column) => column.join(""));
+
+    idRows = idRows.map((row) => row.join(""));
+    idColumns = idColumns.map((column) => column.join(""));
+
+    hotRows = hotRows.map((row) => row.join(""));
+    hotColumns = hotColumns.map((column) => column.join(""));
+
+    multiplierRows = multiplierRows.map((row) => row.join(""));
+    multiplierColumns = multiplierColumns.map((column) => column.join(""));
+
+    pointValRows = pointValRows.map((row) => row.join(""));
+    pointValColumns = pointValColumns.map((column) => column.join(""));
+
     let words = [];
+    let ids = [];
     let hotLetters = [];
+    let points = [];
+    let multipliers = [];
 
-    [...rows, ...columns].map((line) =>
+    [...letterRows, ...letterColumns].map((line) =>
       line.split(" ").map((word) => {
         if (word.length > 1) return words.push(word);
       })
@@ -72,6 +100,9 @@ function validate(gridState, firstTurn) {
       if (!Trie().hasWord(word)) throw `The word: '${word}' is INVALID `;
       //check words validity
     });
+
+    let potentailPoints;
+
     return true;
   } catch (error) {
     console.error(error);

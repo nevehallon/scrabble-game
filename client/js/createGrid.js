@@ -49,7 +49,7 @@ function updateGameState() {
       let hot = letter ? $($element).find(".tile").hasClass("hot") : " ";
       let id = letter ? $($element).find(".tile").attr("data-drag") : " ";
       let pointVal = letter ? $($element).find(".tile div").html() : " ";
-      gridLetters[i].push(letter ? { letter, id, pointVal, hot } : { letter: " ", id, pointVal });
+      gridLetters[i].push(letter ? { letter, id, pointVal, hot } : { letter: " ", id, pointVal, hot }); //possibly remove last hot prop
       ++count;
     }
   }
