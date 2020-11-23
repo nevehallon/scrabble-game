@@ -3,6 +3,19 @@ function zip(arrays) {
   return arrays[0].map((_, i) => arrays.map((array) => array[i]));
 }
 
+let potentialPoints = [];
+let wordMultiplier = [];
+let potentialZipPoints = [];
+let zipWordMultiplier = [];
+
+function push2(point, multi) {
+  potentialPoints.push(point);
+  wordMultiplier.push(multi);
+}
+function push2Zip(point, multi) {
+  potentialZipPoints.push(point);
+  zipWordMultiplier.push(multi);
+}
 function isHot() {
   $("#passPlay").text("Play");
   $("#swapRecall").text("Recall");
@@ -20,6 +33,8 @@ function validate(gridState, firstTurn) {
     if (firstTurn && !board[7][7].letter.trim()) {
       throw "Error: Your word must touch an existing word or the center star";
     }
+
+    let tolerance = firstTurn ? 1 : 2;
 
     let letter = board.map((row) => row.map((obj) => obj.letter));
     let id = board.map((row) => row.map((obj) => obj.id));
@@ -85,7 +100,8 @@ function validate(gridState, firstTurn) {
 
     [...hotRows, ...hotColumns].map((line) =>
       line.split(" ").map((bool) => {
-        if (hotLetters.length > 1) {
+        if (hotLetters.length > tolerance) {
+          console.log(hotLetters);
           throw "(47) The letters you play must lie on the same row or column, and must be connected to each other";
         }
         if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
@@ -101,7 +117,55 @@ function validate(gridState, firstTurn) {
       //check words validity
     });
 
-    let potentailPoints;
+    potentialPoints = [];
+    wordMultiplier = [];
+    potentialZipPoints = [];
+    zipWordMultiplier = [];
+    let coords = [];
+    let zipCoords = [];
+    fullMatrix.hotRows.forEach((row, rowIndex) => {
+      if (_.without(row, " ").length > 1 && row.some((isHot) => isHot === true)) {
+        row.forEach((cell, cellIndex) => {
+          if (cell !== " ") coords.push([rowIndex, cellIndex]);
+        });
+      }
+    });
+
+    fullMatrixZip.hotColumns.forEach((column, columnIndex) => {
+      if (_.without(column, " ").length > 1 && column.some((isHot) => isHot === true)) {
+        column.forEach((cell, cellIndex) => {
+          if (cell !== " ") zipCoords.push([columnIndex, cellIndex]);
+        });
+      }
+    });
+
+    //prettier-ignore
+    coords.forEach(coord => {
+      let point = +fullMatrix.pointValRows[coord[0]][coord[1]];
+      let multiplier = fullMatrix.multiplierRows[coord[0]][coord[1]];
+      multiplier === " " ? potentialPoints.push(point) : 
+      multiplier === "dl" ? potentialPoints.push(point * 2) :
+      multiplier === "tl" ? potentialPoints.push(point * 3) :
+      multiplier === "dw" ? push2(point, 2) :
+      multiplier === "tw" ? push2(point, 3) : "";
+    });
+
+    //prettier-ignore
+    zipCoords.forEach(coord => {
+      let point = +fullMatrixZip.pointValColumns[coord[0]][coord[1]];
+      let multiplier = fullMatrixZip.multiplierColumns[coord[0]][coord[1]];
+      multiplier === " " ? potentialZipPoints.push(point) : 
+      multiplier === "dl" ? potentialZipPoints.push(point * 2) :
+      multiplier === "tl" ? potentialZipPoints.push(point * 3) :
+      multiplier === "dw" ? push2Zip(point, 2) :
+      multiplier === "tw" ? push2Zip(point, 3) : "";
+    });
+
+    console.log(potentialPoints, wordMultiplier, coords);
+    console.log(potentialZipPoints, zipWordMultiplier, zipCoords);
+
+    //TODO: experiment with more words on board
+    //TODO: add word totals
 
     return true;
   } catch (error) {

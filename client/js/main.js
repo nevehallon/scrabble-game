@@ -43,8 +43,8 @@ function startGame() {
 function repaintBoard() {
   setTimeout(() => {
     updateGameState();
-    // console.log(JSON.stringify(gridState.gridLetters));
-    isValidMove = validate(gridState, firstTurn);
+    // isValidMove = validate(gridState, firstTurn); TODO: use this one
+    isValidMove = validate(gridState, false); // TODO: NOT this one
   }, 0);
 }
 function bigTile(tile) {
