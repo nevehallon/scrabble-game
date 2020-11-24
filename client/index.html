@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scrabble Game</title>
   <!-- lodash -->
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"
@@ -11,7 +11,7 @@
   <!-- axios -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <!-- bootstrap -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" />
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"
     integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
@@ -23,269 +23,556 @@
   <script src="./node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
 
   <!-- css -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css" />
   <script defer src="js/main.js" type="module"></script>
 </head>
 
 <body>
   <div class="container p-0">
-
     <div id="frame">
       <div id="board" class="container text-center p-0">
-
-        <div class="column square bg-danger tw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-danger tw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-danger tw"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-danger tw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square">
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="0,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,2"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="0,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,6"></div>
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="0,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,10"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="0,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="0,13"></div>
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="0,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,0"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="1,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,4"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="1,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,8"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="1,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,12"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="1,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="1,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,1"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="2,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,5"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="2,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,7"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="2,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,11"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="2,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="2,14"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="3,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,2"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="3,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,6"></div>
+        <div class="column square bg-info bg-info dl ui-droppable ui-droppable-active" data-location="3,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,10"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="3,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="3,13"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="3,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,3"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="4,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,9"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="4,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="4,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,0"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="5,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,4"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="5,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,8"></div>
+        <div class="column square bg-primary bg-primary tl ui-droppable ui-droppable-active" data-location="5,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,12"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="5,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="5,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,1"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="6,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,5"></div>
+        <div class="column square bg-info bg-info dl ui-droppable ui-droppable-active" data-location="6,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,7"></div>
+        <div class="column square bg-info bg-info dl ui-droppable ui-droppable-active" data-location="6,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,11"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="6,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="6,14"></div>
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="7,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,2"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="7,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,5">
           <!-- TODO: remove -->
-          <div data-drag="44" class="tile ui-draggable ui-draggable-handle ui-sortable-handle"
-            style="z-index: 7; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: xx-large;">F<div
-              style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small;">4</div>
+          <div data-drag="44" class="tile ui-draggable ui-draggable-handle ui-sortable-handle" style="
+                z-index: 5;
+                left: 0px;
+                top: 0px;
+                position: relative;
+                font-weight: bolder;
+                font-size: xx-large;
+                width: 50px;
+                height: 55px;
+              ">F<div style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small">4</div>
           </div>
           <!-- TODO: remove -->
         </div>
-        <div class="column square">
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,6">
           <!-- TODO: remove -->
-          <div data-drag="14" class="tile ui-draggable ui-draggable-handle ui-sortable-handle"
-            style="z-index: 7; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: xx-large;">A<div
-              style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small;">1</div>
+          <div data-drag="14" class="tile ui-draggable ui-draggable-handle ui-sortable-handle" style="
+                z-index: 6;
+                left: 0px;
+                top: 0px;
+                position: relative;
+                font-weight: bolder;
+                font-size: xx-large;
+                width: 50px;
+                height: 55px;
+              ">A<div style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small">1</div>
           </div>
           <!-- TODO: remove -->
         </div>
-        <div class="column square bg-warning dw">
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="7,7">
           <!-- TODO: remove -->
-          <div data-drag="40" class="tile ui-draggable ui-draggable-handle ui-sortable-handle"
-            style="z-index: 7; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: xx-large;">T<div
-              style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small;">1</div>
+          <div data-drag="40" class="tile ui-draggable ui-draggable-handle ui-sortable-handle" style="
+                z-index: 7;
+                left: 0px;
+                top: 0px;
+                position: relative;
+                font-weight: bolder;
+                font-size: xx-large;
+                width: 50px;
+                height: 55px;
+              ">T<div style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small">1</div>
           </div>
           <!-- TODO: remove -->
         </div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-danger tw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-primary tl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-warning dw"></div>
-        <div class="column square"></div>
-        <div class="column square bg-danger tw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-danger tw"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-info dl"></div>
-        <div class="column square"></div>
-        <div class="column square"></div>
-        <div class="column square bg-danger tw"></div>
-
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,10"></div>
+        <div class="column square bg-info bg-info dl ui-droppable ui-droppable-active" data-location="7,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="7,13"></div>
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="7,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,1"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="8,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,5">
+          <div data-drag="111" class="tile ui-draggable ui-draggable-handle ui-sortable-handle" style="
+                z-index: 8;
+                left: 0px;
+                top: 0px;
+                position: relative;
+                font-weight: bolder;
+                font-size: xx-large;
+                width: 50px;
+                height: 55px;
+              ">I<div style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small">1</div>
+          </div>
+        </div>
+        <div class="column square bg-info bg-info dl ui-droppable ui-droppable-active" data-location="8,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,7">
+          <div data-drag="143" class="tile ui-draggable ui-draggable-handle ui-sortable-handle" style="
+                z-index: 13;
+                font-weight: bolder;
+                font-size: xx-large;
+                width: 50px;
+                height: 55px;
+                left: 0px;
+                top: 0px;
+                position: relative;
+              ">E<div style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small">1</div>
+          </div>
+        </div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="8,8"></div>
+        <div class="column square ui-droppable ui-droppable-hover ui-droppable-active" data-location="8,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,11"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="8,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="8,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,0"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="9,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,3"></div>
+        <div class="column square ui-droppable ui-droppable-hover ui-droppable-active" data-location="9,4"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="9,5">
+          <div data-drag="112" class="tile ui-draggable ui-draggable-handle ui-sortable-handle" style="
+                z-index: 9;
+                left: 0px;
+                top: 0px;
+                position: relative;
+                font-weight: bolder;
+                font-size: xx-large;
+                width: 50px;
+                height: 55px;
+              ">T<div style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small">1</div>
+          </div>
+        </div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,7">
+          <div data-drag="511" class="tile ui-draggable ui-draggable-handle ui-sortable-handle"
+            style="z-index: 12; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: xx-large">N<div
+              style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small">1</div>
+          </div>
+        </div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,8"></div>
+        <div class="column square bg-primary bg-primary tl ui-droppable ui-droppable-active" data-location="9,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,12"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="9,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="9,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,3"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="10,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,6"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,9"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="10,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="10,14"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="11,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,2"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="11,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,5"></div>
+        <div class="column square ui-droppable ui-droppable-hover ui-droppable-active" data-location="11,6"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="11,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,10"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="11,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="11,13"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="11,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,1"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="12,2"></div>
+        <div class="column square ui-droppable ui-droppable-hover ui-droppable-active" data-location="12,3"></div>
+        <div class="column square ui-droppable ui-droppable-hover ui-droppable-active" data-location="12,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,5"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="12,6"></div>
+        <div class="column square ui-droppable ui-droppable-hover ui-droppable-active" data-location="12,7"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="12,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,11"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="12,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="12,14"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,0"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="13,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,2"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,4"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="13,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,6"></div>
+        <div class="column square ui-droppable ui-droppable-hover ui-droppable-active" data-location="13,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,8"></div>
+        <div class="column square bg-primary tl ui-droppable ui-droppable-active" data-location="13,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,10"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,12"></div>
+        <div class="column square bg-warning dw ui-droppable ui-droppable-active" data-location="13,13"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="13,14"></div>
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="14,0"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,1"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,2"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="14,3"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,4"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,5"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,6"></div>
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="14,7"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,8"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,9"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,10"></div>
+        <div class="column square bg-info dl ui-droppable ui-droppable-active" data-location="14,11"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,12"></div>
+        <div class="column square ui-droppable ui-droppable-active" data-location="14,13"></div>
+        <div class="column square bg-danger tw ui-droppable ui-droppable-active" data-location="14,14"></div>
       </div>
+      <!-- <div id="board" class="container text-center p-0">
+
+        <div class="column square bg-danger tw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-danger tw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-danger tw"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-danger tw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-danger tw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-primary tl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-warning dw"></div>
+        <div class="column square"></div>
+        <div class="column square bg-danger tw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-danger tw"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-info dl"></div>
+        <div class="column square"></div>
+        <div class="column square"></div>
+        <div class="column square bg-danger tw"></div>
+
+      </div> -->
     </div>
 
     <div id="outer_rack" class="text-center pt-1">
-
-      <img src="./images/Untitled-1.png" alt="word rack"><br>
+      <img src="./images/Untitled-1.png" alt="word rack" /><br />
 
       <div id="rack" class="connectedSortable text-center">
         <!-- <div class="slot" id="slot0"></div>
@@ -296,7 +583,6 @@
         <div class="slot" id="slot5"></div>
         <div class="slot" id="slot6"></div> -->
       </div>
-
     </div>
 
     <button id="startGame" class="btn btn-outline-info">Start Game</button>
@@ -305,12 +591,8 @@
     <button id="swapRecall" class="btn btn-secondary">Swap</button>
     <button id="passPlay" class="btn btn-info">Pass</button>
 
-
-    <br>
-
-
+    <br />
   </div>
-
 </body>
 
 </html>
