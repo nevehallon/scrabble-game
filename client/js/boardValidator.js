@@ -28,11 +28,16 @@ function isNot() {
   $("#swapRecall").text("Swap");
 }
 
-function validate(gridState, firstTurn) {
+function playError() {
+  $("#passPlay").text("Play X");
+}
+
+function validate(gridState, firstTurn, wordsLogged) {
   let { gridLetters: board, gridMultipliers: multiplierMatrix } = gridState;
   try {
     !$(".column .hot").length ? isNot() : isHot();
     if (firstTurn && !board[7][7].letter.trim()) {
+      playError();
       throw "Error: Your word must touch an existing word or the center star";
     }
 
@@ -65,8 +70,8 @@ function validate(gridState, firstTurn) {
     letterRows = letterRows.map((row) => row.join(""));
     letterColumns = letterColumns.map((column) => column.join(""));
 
-    idRows = idRows.map((row) => row.join(""));
-    idColumns = idColumns.map((column) => column.join(""));
+    // idRows = idRows.map((row) => row.join(""));
+    // idColumns = idColumns.map((column) => column.join(""));
 
     hotRows = hotRows.map((row) => row.join(""));
     hotColumns = hotColumns.map((column) => column.join(""));
@@ -80,8 +85,6 @@ function validate(gridState, firstTurn) {
     let words = [];
     let ids = [];
     let hotLetters = [];
-    let points = [];
-    let multipliers = [];
 
     [...letterRows, ...letterColumns].map((line) =>
       line.split(" ").map((word) => {
@@ -89,19 +92,31 @@ function validate(gridState, firstTurn) {
       })
     );
 
+    let suspectId = [];
     [...idRows, ...idColumns].map((line) =>
-      line.split(" ").map((id) => {
-        if (ids.includes(id) && id !== board[7][7].id.trim()) {
+      line.map((id, index) => {
+        if (id === " ") return;
+        let prev = line[index - 1] === " " || line[index - 1] === undefined ? true : false;
+        let next = line[index + 1] === " " || line[index + 1] === undefined ? true : false;
+        if (suspectId.includes(id) && id !== board[7][7].id.trim() && prev && next) {
+          playError();
           throw "(37) The letters you play must lie on the same row or column, and must be connected to each other";
         }
+        //prettier-ignore
+        !suspectId.includes(id) && 
+        prev && 
+        next ? 
+        suspectId.push(id) : undefined;
+
         if (id.length > 0) return ids.push(id);
       })
-    ); // TODO: fix case in which there is a tile with an id == 10 and ids 1 and 0 are placed together
+    );
 
     [...hotRows, ...hotColumns].map((line) =>
       line.split(" ").map((bool) => {
-        if (_.without(hotLetters, "").length > 1 && !hotLetters.some((x) => x === "true")) {
+        if (_.without(hotLetters, "", "true").length > 1) {
           console.log(hotLetters);
+          playError();
           throw "(47) The letters you play must lie on the same row or column, and must be connected to each other";
         }
         if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
@@ -109,14 +124,10 @@ function validate(gridState, firstTurn) {
     );
     console.log(hotLetters);
 
-    if (ids.length == 2) throw `Word must contain at least two letters`;
-
-    console.log(words);
-
-    words.forEach((word) => {
-      if (!Trie().hasWord(word)) throw `The word: '${word}' is INVALID `;
-      //check words validity
-    });
+    if (ids.length == 2) {
+      playError();
+      throw `Word must contain at least two letters`;
+    }
 
     rowWordStack = [];
     columnWordStack = [];
@@ -129,13 +140,13 @@ function validate(gridState, firstTurn) {
     let done = false;
 
     fullMatrix.hotRows.forEach((row, rowIndex) => {
-      if (_.without(row, " ").length > 1 && row.some((isHot) => isHot === true)) {
+      if (_.without(row, " ").length > 1 && row.includes(true)) {
         row.forEach((cell, cellIndex, array) => {
           let first = cellIndex ? 1 : 0;
           if (cell !== " ") {
             if (array[cellIndex - first] === " " && array[cellIndex + 1] === " ") return;
             if (cell === true && array[cellIndex - first] === " ") coords = [];
-            let skip = !_.drop(array, cellIndex + 1).some((isHot) => isHot === true);
+            let skip = !_.drop(array, cellIndex + 1).includes(true);
             if (done) return;
             if (array[cellIndex + 1] === " " && skip) done = true;
             coords.push([rowIndex, cellIndex]);
@@ -150,13 +161,13 @@ function validate(gridState, firstTurn) {
     });
 
     fullMatrixZip.hotColumns.forEach((column, columnIndex) => {
-      if (_.without(column, " ").length > 1 && column.some((isHot) => isHot === true)) {
+      if (_.without(column, " ").length > 1 && column.includes(true)) {
         column.forEach((cell, cellIndex, array) => {
           let first = cellIndex ? 1 : 0;
           if (cell !== " ") {
             if (array[cellIndex - first] === " " && array[cellIndex + 1] === " ") return;
             if (cell === true && array[cellIndex - first] === " ") zipCoords = [];
-            let skip = !_.drop(array, cellIndex + 1).some((isHot) => isHot === true);
+            let skip = !_.drop(array, cellIndex + 1).includes(true);
             if (done) return;
             if (array[cellIndex + 1] === " " && skip) done = true;
             zipCoords.push([columnIndex, cellIndex]);
@@ -204,13 +215,43 @@ function validate(gridState, firstTurn) {
     console.log(potentialZipPoints, zipWordMultiplier, zipCoords);
 
     if (_.without(hotLetters, "").length > potentialPoints.length + potentialZipPoints.length) {
+      playError();
       throw "(57) The letters you play must lie on the same row or column, and must be connected to each other";
-    } // TODO: find this problem earlier
+    }
 
     //TODO: experiment with more words on board
     //TODO: add word totals
+    console.log(words);
 
-    return true;
+    _.without(words, ...wordsLogged).forEach((word) => {
+      if (!Trie().hasWord(word)) {
+        playError();
+        throw `The word: '${word}' is INVALID `;
+      }
+      //check words validity
+    }); // TODO: pass in a 'past words list' to make sure we are only checking new words ->faster trie check
+
+    let pointTally = [];
+
+    potentialPoints.forEach((word, index) => {
+      let isEmpty = wordMultiplier[index] === undefined || wordMultiplier[index] == 0 ? true : false;
+      if (word.length > 7) pointTally.push(50);
+      if (isEmpty) return pointTally.push(_.sum(word));
+      pointTally.push(_.sum(word) * _.sum(wordMultiplier[index]));
+    });
+
+    potentialZipPoints.forEach((word, index) => {
+      let isEmpty = zipWordMultiplier[index] === undefined || zipWordMultiplier[index] == 0 ? true : false;
+      if (word.length > 7) pointTally.push(50);
+      if (isEmpty) return pointTally.push(_.sum(word));
+      pointTally.push(_.sum(word) * _.sum(zipWordMultiplier[index]));
+    });
+
+    pointTally = _.sum(pointTally);
+
+    !$(".column .hot").length ? isNot() : $("#passPlay").text("Play =>");
+
+    return { words, pointTally }; //return wordsToBeLogged, totalPotentialPoints
   } catch (error) {
     console.error(error);
     return error;

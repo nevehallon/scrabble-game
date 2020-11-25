@@ -3,6 +3,8 @@ import { getWordTrieStr, getPossibleWords, getWordValues } from "./getRequests.j
 import { gridState, updateGameState } from "./createGrid.js";
 import validate from "./boardValidator.js";
 
+let playerScore = 0;
+let computerScore = 0;
 let lettersUsed = 0;
 let isZoomed = false;
 let fired = false;
@@ -10,6 +12,7 @@ let fired = false;
 let overRack = false;
 let firstTurn = true;
 let isValidMove = false;
+let wordsLogged = ["FAT", "FIT", "TEN"]; //TODO: should start as an empty arr
 
 const bag = _.shuffle(_.shuffle(letters));
 let rivalRack = [];
@@ -41,11 +44,10 @@ function startGame() {
 }
 
 function repaintBoard() {
-  setTimeout(() => {
-    updateGameState();
-    // isValidMove = validate(gridState, firstTurn); TODO: use this one
-    isValidMove = validate(gridState, false); // TODO: NOT this one
-  }, 0);
+  isValidMove = false;
+  updateGameState();
+  isValidMove = validate(gridState, firstTurn, wordsLogged);
+  console.log(isValidMove);
 }
 function bigTile(tile) {
   tile
@@ -108,6 +110,7 @@ function zoomOut() {
 }
 
 function swap() {
+  //TODO:
   console.log("Swap");
   //show player's letters and ask which letters to swap
 
@@ -142,16 +145,48 @@ function recall() {
   });
   //trigger draggable "stop" in order to update game's state
   repaintBoard();
+  $("#passPlay").text("Pass");
 }
 
 function play() {
-  if (isValidMove !== true) return alert(isValidMove); //TODO: make into modal alert
+  //TODO:
+  if (!isValidMove.words) return alert(isValidMove); //TODO: make into modal alert
   console.log("word played");
+
   //calculate and add points to respective "player"
-  //remove "hot" class from ".column .hot" and call pass()
+  let playersTurn = true; //TODO: make dynamic
+  if (playersTurn) {
+    playerScore += isValidMove.pointTally;
+    console.log("playerScore: ", playerScore);
+  }
+
+  wordsLogged = isValidMove.words;
+
+  //set firstTurn & isValidMove to false
+  if (firstTurn) firstTurn = false;
+  isValidMove = false;
+
+  //fill rack back up to 7 or what ever is left in bag
+  let refill = 7 - $("#rack .tile").toArray().length;
+  for (let i = 0; i < refill; i++) {
+    if (!bag.length) return;
+
+    let { letter, points } = _.pullAt(bag, [0])[0];
+    console.log(letter, points);
+    $(`#rack`).append(`
+        <div data-drag=${++lettersUsed} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
+        `);
+    setDraggable($(`[data-drag="${lettersUsed}"]`));
+  }
+  console.log("letters used: ", lettersUsed);
+  resetSortable();
+
+  //remove "hot" & "multiplier" class from ".column .hot" and call pass()
+  $("#board .hot").draggable("destroy").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]); //TODO: remove multipliers from gridMultipliers
 }
 
 function pass(wasClicked = false) {
+  //TODO:
   console.log("turn passed");
   //if param = true ->
   //    add to passCount
@@ -165,7 +200,7 @@ function pass(wasClicked = false) {
 
 $("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
 $("#swapRecall").click(() => ($("#swapRecall").text() == "Swap" ? swap() : recall()));
-$("#passPlay").click(() => ($("#passPlay").text() == "Play" ? play() : pass(true)));
+$("#passPlay").click(() => ($("#passPlay").text() === "Pass" ? pass(true) : play()));
 $("#startGame").click(startGame);
 $("#zoomOut").click(zoomOut);
 $("#board .column").dblclick((e) => (isZoomed ? zoomOut() : zoomIn(e.target)));
@@ -189,8 +224,10 @@ function setDraggable(x) {
 
       removeDuplicates();
 
+      setTimeout(() => {
+        repaintBoard();
+      }, 300);
       console.count(); //repaintBoard Game/Grid State here
-      repaintBoard();
     },
   });
 }
