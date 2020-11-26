@@ -112,8 +112,18 @@ function validate(gridState, firstTurn, wordsLogged) {
       })
     );
 
-    [...hotRows, ...hotColumns].map((line) =>
+    if (ids.length == 2) {
+      playError();
+      throw `Word must contain at least two letters`;
+    }
+
+    let touching = false;
+    let singleHot = 0;
+    [...hotRows, ...hotColumns].map((line, index) =>
       line.split(" ").map((bool) => {
+        if (bool === "true" && index < 15) singleHot = 1;
+        if (bool === "true" && index >= 15) singleHot ? singleHot++ : undefined;
+        if (bool.includes("falsetrue") || bool.includes("truefalse")) touching = true;
         if (_.without(hotLetters, "", "true").length > 1) {
           console.log(hotLetters);
           playError();
@@ -122,12 +132,18 @@ function validate(gridState, firstTurn, wordsLogged) {
         if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
       })
     );
-    console.log(hotLetters);
 
-    if (ids.length == 2) {
+    // [ ][F][ ] should
+    // [ ][I][D] throw
+    // [ ][N][A] error
+    // [I][D][ ] TODO:
+
+    if ((!touching && !firstTurn) || singleHot > 1) {
       playError();
-      throw `Word must contain at least two letters`;
+      throw "(48) The letters you play must lie on the same row or column, and must be connected to each other";
     }
+
+    console.log(hotLetters);
 
     rowWordStack = [];
     columnWordStack = [];
@@ -141,15 +157,24 @@ function validate(gridState, firstTurn, wordsLogged) {
 
     fullMatrix.hotRows.forEach((row, rowIndex) => {
       if (_.without(row, " ").length > 1 && row.includes(true)) {
-        row.forEach((cell, cellIndex, array) => {
-          let first = cellIndex ? 1 : 0;
+        row.forEach((cell, index) => {
+          if (done) return;
+          let prev = row[index - 1] === undefined || row[index - 1] === " " ? true : false;
+          let next = row[index + 1] === undefined || row[index + 1] === " " ? true : false;
+          let skip = !_.drop(row, index + 1).includes(true);
           if (cell !== " ") {
-            if (array[cellIndex - first] === " " && array[cellIndex + 1] === " ") return;
-            if (cell === true && array[cellIndex - first] === " ") coords = [];
-            let skip = !_.drop(array, cellIndex + 1).includes(true);
-            if (done) return;
-            if (array[cellIndex + 1] === " " && skip) done = true;
-            coords.push([rowIndex, cellIndex]);
+            if (prev && !skip) coords = [];
+            if (cell === true && prev) {
+              coords = [];
+              if (!skip && prev && next) {
+                playError();
+                throw "(51) The letters you play must lie on the same row or column, and must be connected to each other";
+              }
+              if (prev && next) return (done = true);
+            }
+            if (prev && next) return;
+            if (next && skip) done = true;
+            coords.push([rowIndex, index]);
           }
         });
         done = false;
@@ -162,15 +187,24 @@ function validate(gridState, firstTurn, wordsLogged) {
 
     fullMatrixZip.hotColumns.forEach((column, columnIndex) => {
       if (_.without(column, " ").length > 1 && column.includes(true)) {
-        column.forEach((cell, cellIndex, array) => {
-          let first = cellIndex ? 1 : 0;
+        column.forEach((cell, index) => {
+          if (done) return;
+          let prev = column[index - 1] === undefined || column[index - 1] === " " ? true : false;
+          let next = column[index + 1] === undefined || column[index + 1] === " " ? true : false;
+          let skip = !_.drop(column, index + 1).includes(true);
           if (cell !== " ") {
-            if (array[cellIndex - first] === " " && array[cellIndex + 1] === " ") return;
-            if (cell === true && array[cellIndex - first] === " ") zipCoords = [];
-            let skip = !_.drop(array, cellIndex + 1).includes(true);
-            if (done) return;
-            if (array[cellIndex + 1] === " " && skip) done = true;
-            zipCoords.push([columnIndex, cellIndex]);
+            if (prev && !skip) zipCoords = [];
+            if (cell === true && prev) {
+              zipCoords = [];
+              if (!skip && prev && next) {
+                playError();
+                throw "(52) The letters you play must lie on the same row or column, and must be connected to each other";
+              }
+              if (prev && next) return (done = true);
+            }
+            if (prev && next) return;
+            if (next && skip) done = true;
+            zipCoords.push([columnIndex, index]);
           }
         });
         done = false;
@@ -215,6 +249,7 @@ function validate(gridState, firstTurn, wordsLogged) {
     console.log(potentialZipPoints, zipWordMultiplier, zipCoords);
 
     if (_.without(hotLetters, "").length > potentialPoints.length + potentialZipPoints.length) {
+      console.log(hotLetters);
       playError();
       throw "(57) The letters you play must lie on the same row or column, and must be connected to each other";
     }

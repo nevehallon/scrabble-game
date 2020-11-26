@@ -6,26 +6,24 @@ import validate from "./boardValidator.js";
 let playerScore = 0;
 let computerScore = 0;
 let lettersUsed = 0;
+let passCount = 0;
 let isZoomed = false;
 let fired = false;
-// let triggered = false;
 let overRack = false;
 let firstTurn = true;
 let isValidMove = false;
-let wordsLogged = ["FAT", "FIT", "TEN"]; //TODO: should start as an empty arr
+let playersTurn = false;
+let wordsLogged = [];
 
-const bag = _.shuffle(_.shuffle(letters));
+let bag = _.shuffle(_.shuffle(letters)); //TODO: change to const
+bag = _.drop(bag, 80); //TODO: remove after tests
 let rivalRack = [];
-
-console.log(JSON.stringify(gridState));
-console.log(gridState);
 
 getWordTrieStr();
 
-getWordValues();
+// getWordValues(); TODO: use in case that you want to sort sub-anas by score descending
 
-function startGame() {
-  // $('#rack').empty();
+function deal2Player() {
   for (let i = 0; i < 7; i++) {
     let { letter, points } = _.pullAt(bag, [0])[0];
     console.log(letter, points);
@@ -34,13 +32,46 @@ function startGame() {
         `);
     setDraggable($(`[data-drag="${i}"]`));
   }
+}
+
+function deal2PC() {
   for (let i = 0; i < 7; i++) {
     rivalRack.push(_.pullAt(bag, [0])[0]);
     console.log(rivalRack);
   }
+}
+
+function whoStarts() {
+  let bagSim = _.shuffle(bag);
+  return {
+    player: _.pullAt(bagSim, [0])[0].letter,
+    pc: _.pullAt(bagSim, [0])[0].letter,
+  };
+}
+
+function alertStarter(winner) {
+  //TODO: alert user who plays first
+  console.log(winner);
+}
+
+function startGame() {
+  let { player, pc } = whoStarts();
+  if (player === pc) return startGame();
+
   lettersUsed = 14;
-  $("#startGame").attr("disabled", "disabled");
+  $("#startGame").attr("disabled", "disabled"); //TODO: remove start btn
   resetSortable();
+
+  if (player < pc) {
+    deal2Player();
+    deal2PC();
+    playersTurn = true;
+    alertStarter("you");
+  } else {
+    deal2PC();
+    deal2Player();
+    alertStarter("computer");
+  }
 }
 
 function repaintBoard() {
@@ -109,6 +140,21 @@ function zoomOut() {
   isZoomed = false;
 }
 
+function pcPlay() {
+  playersTurn = false;
+  //TODO:
+  console.log("pc's turn");
+  pass();
+}
+
+function endGame() {
+  //TODO:
+  //in modal display:
+  //  both players points
+  //  declare winner
+  //  offer rematch
+}
+
 function swap() {
   //TODO:
   console.log("Swap");
@@ -124,7 +170,7 @@ function swap() {
 }
 
 function mix() {
-  if (!$("#rack .tile").length) return;
+  if ($("#rack .tile").length < 2) return;
   let shuffledRack = _.shuffle($("#rack .tile").toArray());
   $("#rack .tile").remove();
   shuffledRack.forEach((tile) => {
@@ -148,13 +194,34 @@ function recall() {
   $("#passPlay").text("Pass");
 }
 
+function pass(wasClicked = false) {
+  //TODO:
+  console.log("turn passed");
+  //if param = true ->
+  //    add to passCount
+  if (wasClicked) passCount++;
+  //if passCount = 4 ->
+  //    end game
+  if (passCount === 4) return endGame();
+  //if param = false ->
+  //    make sure firstTurn is set to false
+  //    reset passCount to equal 0
+  if (!wasClicked) {
+    if (firstTurn) firstTurn = false;
+    passCount = 0;
+  }
+  //    allow next turn
+  playersTurn ? pcPlay() : (playersTurn = true);
+  console.log("pTurn: ", playersTurn); //TODO: why does this fire 2X
+}
+
 function play() {
   //TODO:
   if (!isValidMove.words) return alert(isValidMove); //TODO: make into modal alert
   console.log("word played");
 
   //calculate and add points to respective "player"
-  let playersTurn = true; //TODO: make dynamic
+  playersTurn = true; //TODO: make dynamic
   if (playersTurn) {
     playerScore += isValidMove.pointTally;
     console.log("playerScore: ", playerScore);
@@ -165,37 +232,36 @@ function play() {
   //set firstTurn & isValidMove to false
   if (firstTurn) firstTurn = false;
   isValidMove = false;
+  $("#passPlay").text("Pass");
 
+  let refill = $("#board .hot").length;
+  let hotColumns = $("#board .hot").parent().toArray();
   //fill rack back up to 7 or what ever is left in bag
-  let refill = 7 - $("#rack .tile").toArray().length;
   for (let i = 0; i < refill; i++) {
-    if (!bag.length) return;
+    //remove multipliers from gridMultipliers
+    let coords = hotColumns[i].getAttribute("data-location").split(",");
+    gridState.gridMultipliers[+coords[0]][+coords[1]] = " ";
 
-    let { letter, points } = _.pullAt(bag, [0])[0];
-    console.log(letter, points);
-    $(`#rack`).append(`
-        <div data-drag=${++lettersUsed} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
-        `);
-    setDraggable($(`[data-drag="${lettersUsed}"]`));
+    if (bag.length) {
+      let { letter, points } = _.pullAt(bag, [0])[0];
+      console.log(letter, points);
+      $(`#rack`).append(`
+    <div data-drag=${++lettersUsed} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
+    `);
+      setDraggable($(`[data-drag="${lettersUsed}"]`));
+    }
   }
+
+  if (!bag.length && !$("#rack .tile").length) {
+    return endGame();
+  }
+
   console.log("letters used: ", lettersUsed);
   resetSortable();
 
-  //remove "hot" & "multiplier" class from ".column .hot" and call pass()
-  $("#board .hot").draggable("destroy").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]); //TODO: remove multipliers from gridMultipliers
-}
-
-function pass(wasClicked = false) {
-  //TODO:
-  console.log("turn passed");
-  //if param = true ->
-  //    add to passCount
-  //if passCount = 4 ->
-  //    end game
-  //if param = false ->
-  //    make sure firstTurn is set to false
-  //    reset passCount to equal 0
-  //    allow next turn
+  //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
+  $("#board .hot").draggable("destroy").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]);
+  pass();
 }
 
 $("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
