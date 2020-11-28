@@ -41,6 +41,21 @@ function validate(gridState, firstTurn, wordsLogged) {
       throw "Error: Your word must touch an existing word or the center star";
     }
 
+    let hotPivot;
+    let hotCompare;
+    let hotArr = $("#board .hot").parent().toArray();
+    if (hotArr.length > 1) {
+      hotArr.forEach((tile, index) => {
+        hotCompare = tile.getAttribute("data-location").split(",");
+
+        if (index === 0) hotPivot = tile.getAttribute("data-location").split(",");
+
+        if (hotCompare[0] !== hotPivot[0] && hotCompare[1] !== hotPivot[1]) {
+          throw "(1) The letters you play must lie on the same row or column, and must be connected to each other";
+        }
+      });
+    }
+
     let letter = board.map((row) => row.map((obj) => obj.letter));
     let id = board.map((row) => row.map((obj) => obj.id));
     let hot = board.map((row) => row.map((obj) => obj.hot));
