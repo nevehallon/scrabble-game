@@ -139,3 +139,21 @@ div.tile:active {
   background: transparent;
   border: 1px dashed rgb(100, 150, 150);
 }
+
+button#bagBtn {
+  background-image: url("https://cdn.pixabay.com/photo/2014/04/02/11/04/bag-305400_960_720.png");
+  background-color: #cccccc;
+  width: 55px;
+  height: 38px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-size: 30px;
+}
+button#scoresBtn {
+  height: 38px;
+  width: 90px;
+  span {
+    line-height: 1;
+  }
+}

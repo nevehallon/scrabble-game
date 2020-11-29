@@ -51,6 +51,7 @@ function validate(gridState, firstTurn, wordsLogged) {
         if (index === 0) hotPivot = tile.getAttribute("data-location").split(",");
 
         if (hotCompare[0] !== hotPivot[0] && hotCompare[1] !== hotPivot[1]) {
+          playError();
           throw "(1) The letters you play must lie on the same row or column, and must be connected to each other";
         }
       });
@@ -147,11 +148,6 @@ function validate(gridState, firstTurn, wordsLogged) {
         if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
       })
     );
-
-    // [ ][F][ ] should
-    // [ ][I][D] throw
-    // [ ][N][A] error
-    // [I][D][ ] TODO:
 
     if ((!touching && !firstTurn) || singleHot > 1) {
       playError();
@@ -269,9 +265,7 @@ function validate(gridState, firstTurn, wordsLogged) {
       throw "(57) The letters you play must lie on the same row or column, and must be connected to each other";
     }
 
-    //TODO: experiment with more words on board
-    //TODO: add word totals
-    console.log(words);
+    console.log(words); //TODO: remove me
 
     _.without(words, ...wordsLogged).forEach((word) => {
       if (!Trie().hasWord(word)) {
@@ -279,7 +273,7 @@ function validate(gridState, firstTurn, wordsLogged) {
         throw `The word: '${word}' is INVALID `;
       }
       //check words validity
-    }); // TODO: pass in a 'past words list' to make sure we are only checking new words ->faster trie check
+    }); // passing in everything but words that have already been played to make sure we are only checking new words ->faster trie check
 
     let pointTally = [];
 
@@ -299,7 +293,7 @@ function validate(gridState, firstTurn, wordsLogged) {
 
     pointTally = _.sum(pointTally);
 
-    !$(".column .hot").length ? isNot() : $("#passPlay").text("Play =>");
+    !$(".column .hot").length ? isNot() : $("#passPlay").text(`Play ${pointTally}`);
 
     return { words, pointTally }; //return wordsToBeLogged, totalPotentialPoints
   } catch (error) {

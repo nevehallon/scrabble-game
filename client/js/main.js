@@ -1,5 +1,5 @@
 import letters from "./scrabbleLetters.js";
-import { getWordTrieStr, getPossibleWords, getWordValues } from "./getRequests.js";
+import { getWordTrieStr, calcPcMove } from "./getRequests.js";
 import { gridState, updateGameState } from "./createGrid.js";
 import validate from "./boardValidator.js";
 
@@ -26,7 +26,6 @@ getWordTrieStr();
 function deal2Player() {
   for (let i = 0; i < 7; i++) {
     let { letter, points } = _.pullAt(bag, [0])[0];
-    console.log(letter, points);
     $(`#rack`).append(`
         <div data-drag=${i} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
         `);
@@ -37,7 +36,6 @@ function deal2Player() {
 function deal2PC() {
   for (let i = 0; i < 7; i++) {
     rivalRack.push(_.pullAt(bag, [0])[0]);
-    console.log(rivalRack);
   }
 }
 
@@ -59,6 +57,8 @@ function startGame() {
   if (player === pc) return startGame();
 
   lettersUsed = 14;
+  $("#bagBtn").text(100 - lettersUsed);
+
   $("#startGame").attr("disabled", "disabled"); //TODO: remove start btn
   resetSortable();
 
@@ -140,11 +140,15 @@ function zoomOut() {
   isZoomed = false;
 }
 
-function pcPlay() {
+startGame(); //TODO: remove after done w/ pc move
+pcPlay(); //TODO: remove after done w/ pc move
+async function pcPlay() {
+  console.log("pc's turn");
   playersTurn = false;
   //TODO:
-  console.log("pc's turn");
-  pass();
+  zoomOut();
+  let pcMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
+  // play(); //TODO: activate when pc can play valid moves
 }
 
 function endGame() {
@@ -153,6 +157,7 @@ function endGame() {
   //  both players points
   //  declare winner
   //  offer rematch
+  console.log("gameOver");
 }
 
 function swap() {
@@ -212,11 +217,10 @@ function pass(wasClicked = false) {
   }
   //    allow next turn
   playersTurn ? pcPlay() : (playersTurn = true);
-  console.log("pTurn: ", playersTurn); //TODO: why does this fire 2X
 }
 
 function play() {
-  //TODO:
+  //TODO: make compatible with pc plays
   if (!isValidMove.words) return alert(isValidMove); //TODO: make into modal alert
   console.log("word played");
 
@@ -224,10 +228,13 @@ function play() {
   playersTurn = true; //TODO: make dynamic
   if (playersTurn) {
     playerScore += isValidMove.pointTally;
+    $("#playerScore").text(playerScore);
     console.log("playerScore: ", playerScore);
   }
 
-  wordsLogged = isValidMove.words;
+  // #pcScore TODO: add and display pc's score
+
+  wordsLogged = isValidMove.words; //adding to the words that have been played
 
   //set firstTurn & isValidMove to false
   if (firstTurn) firstTurn = false;
@@ -257,6 +264,7 @@ function play() {
   }
 
   console.log("letters used: ", lettersUsed);
+  $("#bagBtn").text(100 - lettersUsed);
   resetSortable();
 
   //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
@@ -264,6 +272,17 @@ function play() {
   pass();
 }
 
+function showBagContent() {
+  //TODO: make into modal
+  // list letters + blank and how many remain of each tile
+}
+function showScoreHistory() {
+  //TODO: make into modal
+  //show list of moves. who played what and how many points were earned
+}
+
+$("#bagBtn").click(showBagContent);
+$("#scoresBtn").click(showScoreHistory);
 $("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
 $("#swapRecall").click(() => ($("#swapRecall").text() == "Swap" ? swap() : recall()));
 $("#passPlay").click(() => ($("#passPlay").text() === "Pass" ? pass(true) : play()));
@@ -292,8 +311,7 @@ function setDraggable(x) {
 
       setTimeout(() => {
         repaintBoard();
-      }, 300);
-      console.count(); //repaintBoard Game/Grid State here
+      }, 300); //repaintBoard Game/Grid State here
     },
   });
 }
