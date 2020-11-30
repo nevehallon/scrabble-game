@@ -40,29 +40,4 @@ async function getWordValues(str, numBlanks = 0) {
   }
 }
 
-async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
-  console.log(gridState);
-
-  let rack = [];
-  let numBlanks = 0;
-
-  rivalRack.forEach((x) => {
-    if (!x.letter) numBlanks++;
-    rack.push(x.letter);
-  });
-  console.log(rack);
-  let wordSet = await getWordValues(rack.join("").toLowerCase(), numBlanks); //TODO: delete log!
-  console.log(wordSet);
-  if (firstTurn && wordSet.length) {
-    wordSet.slice(0, 10).forEach((x) => {
-      x.word
-        .toUpperCase()
-        .split("")
-        .forEach((letter) => {
-          //TODO: take each letter and match it to the letter in the rivalRack -> take the corresponding points and place the letter one by one on the board -> then calculate the score w/ bonus. take the highest scoring word and render its tiles on the board in optimal position(better scoring tiles on the DL/TL)
-        });
-    });
-  }
-}
-
-export { getWordTrieStr, calcPcMove };
+export { getWordTrieStr, getWordValues };

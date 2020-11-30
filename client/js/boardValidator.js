@@ -1,4 +1,5 @@
 import Trie from "../src/trie-prefix-tree/index.js";
+
 function zip(arrays) {
   return arrays[0].map((_, i) => arrays.map((array) => array[i]));
 }
@@ -32,29 +33,31 @@ function playError() {
   $("#passPlay").text("Play X");
 }
 
-function validate(gridState, firstTurn, wordsLogged) {
+function validate(gridState, firstTurn, wordsLogged, isPlayer) {
   let { gridLetters: board, gridMultipliers: multiplierMatrix } = gridState;
   try {
-    !$(".column .hot").length ? isNot() : isHot();
-    if (firstTurn && !board[7][7].letter.trim()) {
-      playError();
-      throw "Error: Your word must touch an existing word or the center star";
-    }
+    if (isPlayer) {
+      !$(".column .hot").length ? isNot() : isHot();
+      if (firstTurn && !board[7][7].letter.trim()) {
+        playError();
+        throw "Error: Your word must touch an existing word or the center star";
+      }
 
-    let hotPivot;
-    let hotCompare;
-    let hotArr = $("#board .hot").parent().toArray();
-    if (hotArr.length > 1) {
-      hotArr.forEach((tile, index) => {
-        hotCompare = tile.getAttribute("data-location").split(",");
+      let hotPivot;
+      let hotCompare;
+      let hotArr = $("#board .hot").parent().toArray();
+      if (hotArr.length > 1) {
+        hotArr.forEach((tile, index) => {
+          hotCompare = tile.getAttribute("data-location").split(",");
 
-        if (index === 0) hotPivot = tile.getAttribute("data-location").split(",");
+          if (index === 0) hotPivot = tile.getAttribute("data-location").split(",");
 
-        if (hotCompare[0] !== hotPivot[0] && hotCompare[1] !== hotPivot[1]) {
-          playError();
-          throw "(1) The letters you play must lie on the same row or column, and must be connected to each other";
-        }
-      });
+          if (hotCompare[0] !== hotPivot[0] && hotCompare[1] !== hotPivot[1]) {
+            playError();
+            throw "(1) The letters you play must lie on the same row or column, and must be connected to each other";
+          }
+        });
+      }
     }
 
     let letter = board.map((row) => row.map((obj) => obj.letter));
@@ -78,7 +81,6 @@ function validate(gridState, firstTurn, wordsLogged) {
       pointValColumns: zip(pointVal),
       multiplierColumns: zip(multiplier),
     };
-    console.log(fullMatrix, fullMatrixZip);
 
     let { letterRows, idRows, hotRows, pointValRows, multiplierRows } = fullMatrix;
     let { letterColumns, idColumns, hotColumns, pointValColumns, multiplierColumns } = fullMatrixZip;
@@ -108,53 +110,52 @@ function validate(gridState, firstTurn, wordsLogged) {
       })
     );
 
-    let suspectId = [];
-    [...idRows, ...idColumns].map((line) =>
-      line.map((id, index) => {
-        if (id === " ") return;
-        let prev = line[index - 1] === " " || line[index - 1] === undefined ? true : false;
-        let next = line[index + 1] === " " || line[index + 1] === undefined ? true : false;
-        if (suspectId.includes(id) && id !== board[7][7].id.trim() && prev && next) {
-          playError();
-          throw "(37) The letters you play must lie on the same row or column, and must be connected to each other";
-        }
-        //prettier-ignore
-        !suspectId.includes(id) && 
+    if (isPlayer) {
+      let suspectId = [];
+      [...idRows, ...idColumns].map((line) =>
+        line.map((id, index) => {
+          if (id === " ") return;
+          let prev = line[index - 1] === " " || line[index - 1] === undefined ? true : false;
+          let next = line[index + 1] === " " || line[index + 1] === undefined ? true : false;
+          if (suspectId.includes(id) && id !== board[7][7].id.trim() && prev && next) {
+            playError();
+            throw "(37) The letters you play must lie on the same row or column, and must be connected to each other";
+          }
+          //prettier-ignore
+          !suspectId.includes(id) && 
         prev && 
         next ? 
         suspectId.push(id) : undefined;
 
-        if (id.length > 0) return ids.push(id);
-      })
-    );
+          if (id.length > 0) return ids.push(id);
+        })
+      );
 
-    if (ids.length == 2) {
-      playError();
-      throw `Word must contain at least two letters`;
+      if (ids.length == 2) {
+        playError();
+        throw `Word must contain at least two letters`;
+      }
+
+      let touching = false;
+      let singleHot = 0;
+      [...hotRows, ...hotColumns].map((line, index) =>
+        line.split(" ").map((bool) => {
+          if (bool === "true" && index < 15) singleHot = 1;
+          if (bool === "true" && index >= 15) singleHot ? singleHot++ : undefined;
+          if (bool.includes("falsetrue") || bool.includes("truefalse")) touching = true;
+          if (_.without(hotLetters, "", "true").length > 1) {
+            playError();
+            throw "(47) The letters you play must lie on the same row or column, and must be connected to each other";
+          }
+          if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
+        })
+      );
+
+      if ((!touching && !firstTurn) || singleHot > 1) {
+        playError();
+        throw "(48) The letters you play must lie on the same row or column, and must be connected to each other";
+      }
     }
-
-    let touching = false;
-    let singleHot = 0;
-    [...hotRows, ...hotColumns].map((line, index) =>
-      line.split(" ").map((bool) => {
-        if (bool === "true" && index < 15) singleHot = 1;
-        if (bool === "true" && index >= 15) singleHot ? singleHot++ : undefined;
-        if (bool.includes("falsetrue") || bool.includes("truefalse")) touching = true;
-        if (_.without(hotLetters, "", "true").length > 1) {
-          console.log(hotLetters);
-          playError();
-          throw "(47) The letters you play must lie on the same row or column, and must be connected to each other";
-        }
-        if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
-      })
-    );
-
-    if ((!touching && !firstTurn) || singleHot > 1) {
-      playError();
-      throw "(48) The letters you play must lie on the same row or column, and must be connected to each other";
-    }
-
-    console.log(hotLetters);
 
     rowWordStack = [];
     columnWordStack = [];
@@ -177,7 +178,7 @@ function validate(gridState, firstTurn, wordsLogged) {
             if (prev && !skip) coords = [];
             if (cell === true && prev) {
               coords = [];
-              if (!skip && prev && next) {
+              if (!skip && prev && next && isPlayer) {
                 playError();
                 throw "(51) The letters you play must lie on the same row or column, and must be connected to each other";
               }
@@ -207,7 +208,7 @@ function validate(gridState, firstTurn, wordsLogged) {
             if (prev && !skip) zipCoords = [];
             if (cell === true && prev) {
               zipCoords = [];
-              if (!skip && prev && next) {
+              if (!skip && prev && next && isPlayer) {
                 playError();
                 throw "(52) The letters you play must lie on the same row or column, and must be connected to each other";
               }
@@ -256,30 +257,26 @@ function validate(gridState, firstTurn, wordsLogged) {
       });
     });
 
-    console.log(potentialPoints, wordMultiplier, coords);
-    console.log(potentialZipPoints, zipWordMultiplier, zipCoords);
-
-    if (_.without(hotLetters, "").length > potentialPoints.length + potentialZipPoints.length) {
-      console.log(hotLetters);
-      playError();
-      throw "(57) The letters you play must lie on the same row or column, and must be connected to each other";
-    }
-
-    console.log(words); //TODO: remove me
-
-    _.without(words, ...wordsLogged).forEach((word) => {
-      if (!Trie().hasWord(word)) {
+    if (isPlayer) {
+      if (_.without(hotLetters, "").length > potentialPoints.length + potentialZipPoints.length) {
         playError();
-        throw `The word: '${word}' is INVALID `;
+        throw "(57) The letters you play must lie on the same row or column, and must be connected to each other";
       }
-      //check words validity
-    }); // passing in everything but words that have already been played to make sure we are only checking new words ->faster trie check
+
+      _.without(words, ...wordsLogged).forEach((word) => {
+        if (!Trie().hasWord(word)) {
+          playError();
+          throw `The word: '${word}' is INVALID `;
+        }
+        //check words validity
+      }); // passing in everything but words that have already been played to make sure we are only checking new words ->faster trie check
+    }
 
     let pointTally = [];
 
     potentialPoints.forEach((word, index) => {
       let isEmpty = wordMultiplier[index] === undefined || wordMultiplier[index] == 0 ? true : false;
-      if (word.length > 7) pointTally.push(50);
+      if (word.length > 6) pointTally.push(50);
       if (isEmpty) return pointTally.push(_.sum(word));
       pointTally.push(_.sum(word) * _.sum(wordMultiplier[index]));
     });
@@ -293,7 +290,9 @@ function validate(gridState, firstTurn, wordsLogged) {
 
     pointTally = _.sum(pointTally);
 
-    !$(".column .hot").length ? isNot() : $("#passPlay").text(`Play ${pointTally}`);
+    if (isPlayer) {
+      !$(".column .hot").length ? isNot() : $("#passPlay").text(`Play ${pointTally}`);
+    }
 
     return { words, pointTally }; //return wordsToBeLogged, totalPotentialPoints
   } catch (error) {

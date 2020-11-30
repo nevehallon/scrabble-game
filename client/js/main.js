@@ -1,5 +1,6 @@
 import letters from "./scrabbleLetters.js";
-import { getWordTrieStr, calcPcMove } from "./getRequests.js";
+import { getWordTrieStr } from "./getRequests.js";
+import { calcPcMove } from "./compute.js";
 import { gridState, updateGameState } from "./createGrid.js";
 import validate from "./boardValidator.js";
 
@@ -19,6 +20,7 @@ let bag = _.shuffle(_.shuffle(letters)); //TODO: change to const
 bag = _.drop(bag, 80); //TODO: remove after tests
 let rivalRack = [];
 
+updateGameState();
 getWordTrieStr();
 
 // getWordValues(); TODO: use in case that you want to sort sub-anas by score descending
@@ -77,7 +79,7 @@ function startGame() {
 function repaintBoard() {
   isValidMove = false;
   updateGameState();
-  isValidMove = validate(gridState, firstTurn, wordsLogged);
+  isValidMove = validate(gridState, firstTurn, wordsLogged, true);
   console.log(isValidMove);
 }
 function bigTile(tile) {
