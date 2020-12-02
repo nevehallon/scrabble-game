@@ -90,6 +90,31 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     });
     // console.log(rivalRack, tiles); //TODO: remove me!!
   } else {
+    let startingCoords = [];
+    let tilesPlayedCoords = [];
+    let tilesPlayed = $("#board .tile").parent().toArray();
+
+    tilesPlayed.forEach((coord) => {
+      tilesPlayedCoords.push(coord.getAttribute("data-location").split(",").map(Number));
+    });
+    let tileCompare = tilesPlayedCoords.map((x) => x.join(""));
+
+    tilesPlayedCoords.forEach((coord) => {
+      let startCompare = startingCoords.map((x) => x.join(""));
+      let locations = [];
+      if (coord[0] !== 0) locations.push([coord[0] - 1, coord[1]]);
+      if (coord[0] !== 14) locations.push([coord[0] + 1, coord[1]]);
+      if (coord[1] !== 0) locations.push([coord[0], coord[1] - 1]);
+      if (coord[1] !== 14) locations.push([coord[0], coord[1] + 1]);
+
+      locations.forEach((location) => {
+        if (!tileCompare.includes(location.join("")) && !startCompare.includes(location.join(""))) {
+          startingCoords.push(location);
+        }
+      });
+    });
+
+    // ?startingCoords = the squares on the board where we can build off from
     //>>>>>>>>>TODO: what pc does when it's not the first turn <<<<<<<<<<
   }
   //   return the var holding -> {rivalRack, score: bestWord.pointTally, newWordsLogged};TODO:

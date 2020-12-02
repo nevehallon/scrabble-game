@@ -244,11 +244,11 @@ function play() {
   $("#passPlay").text("Pass");
 
   let refill = $("#board .hot").length;
-  let hotColumns = $("#board .hot").parent().toArray();
+  let tilesPlayed = $("#board .hot").parent().toArray();
   //fill rack back up to 7 or what ever is left in bag
   for (let i = 0; i < refill; i++) {
     //remove multipliers from gridMultipliers
-    let coords = hotColumns[i].getAttribute("data-location").split(",");
+    let coords = tilesPlayed[i].getAttribute("data-location").split(",");
     gridState.gridMultipliers[+coords[0]][+coords[1]] = " ";
 
     if (bag.length) {
