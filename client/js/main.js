@@ -3,6 +3,9 @@ import { getWordTrieStr } from "./getRequests.js";
 import { calcPcMove } from "./compute.js";
 import { gridState, updateGameState } from "./createGrid.js";
 import validate from "./boardValidator.js";
+// import trie from "../src/trie-prefix-tree/index.js";
+
+// console.log(trie);
 
 let playerScore = 0;
 let computerScore = 0;

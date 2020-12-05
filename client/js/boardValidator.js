@@ -1,4 +1,4 @@
-import Trie from "../src/trie-prefix-tree/index.js";
+import trie from "../src/trie-prefix-tree/index.js";
 
 function zip(arrays) {
   return arrays[0].map((_, i) => arrays.map((array) => array[i]));
@@ -264,7 +264,7 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
       }
 
       _.without(words, ...wordsLogged).forEach((word) => {
-        if (!Trie().hasWord(word)) {
+        if (!trie().hasWord(word)) {
           playError();
           throw `The word: '${word}' is INVALID `;
         }

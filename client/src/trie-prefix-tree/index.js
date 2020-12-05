@@ -6,15 +6,25 @@ import recurseRandomWord from "./recurseRandomWord.js";
 import utils from "./utils.js";
 import config from "./config.js";
 import permutations from "./permutations.js";
+// import { getWordTrieStr } from "../../js/getRequests.js";
+
+// let { localTrieStr, localReverseTrieStr } = getWordTrieStr();
+// console.log(localTrieStr);
+// console.log(localReverseTrieStr);
 
 const PERMS_MIN_LEN = config.PERMS_MIN_LEN;
+
+// const myTrie = JSON.parse(localStorage.getItem("wordTrieStr")) || JSON.parse(localTrieStr);
+// const myReverseTrie = JSON.parse(localStorage.getItem("reverseWordTrieStr")) || JSON.parse(localReverseTrieStr);
 
 export default function (input) {
   // if(!Array.isArray(input)) {
   //   throw(`Expected parameter Array, received ${typeof input}`);
   // }
 
-  const trie = JSON.parse(localStorage.getItem("wordTrieStr")) || create([...input]);
+  let isTrieReversed = false;
+
+  let trie = myTrie || create([...input]);
 
   return {
     /**
@@ -71,6 +81,10 @@ export default function (input) {
      * @returns Boolean
      */
     isPrefix(prefix) {
+      if (isTrieReversed) {
+        trie = myTrie;
+        isTrieReversed = !isTrieReversed;
+      }
       if (typeof prefix !== "string") {
         throw `Expected string prefix, received ${typeof prefix}`;
       }
@@ -78,6 +92,24 @@ export default function (input) {
       const { prefixFound } = checkPrefix(trie, prefix);
 
       return prefixFound;
+    },
+
+    /**
+     * Check a suffix is valid
+     * @returns Boolean
+     */
+    isSuffix(suffix) {
+      if (!isTrieReversed) {
+        trie = myReverseTrie;
+        isTrieReversed = !isTrieReversed;
+      }
+      if (typeof suffix !== "string") {
+        throw `Expected string suffix, received ${typeof suffix}`;
+      }
+
+      const { suffixFound } = checkPrefix(trie, suffix);
+
+      return suffixFound;
     },
 
     /**

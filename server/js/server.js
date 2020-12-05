@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-const { wordFinder, wordTrieStr } = require('./wordFinder');
+const express = require("express");
+const cors = require("cors");
+const { wordFinder, wordTrieStr, reverseWordTrieStr } = require("./wordFinder");
 
 const app = express();
 app.use(cors());
@@ -10,16 +10,17 @@ app.use(cors());
 //     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 // };
 
-app.get('/wordFinder', (req, res, next) => {
-    res.send({
-        "wordsFound": wordFinder(req.query.letters, Number(req.query.numBlanks))
-    });
+app.get("/wordFinder", (req, res, next) => {
+  res.send({
+    wordsFound: wordFinder(req.query.letters, Number(req.query.numBlanks)),
+  });
 });
 
-app.get('/wordTrieStr', (req, res, next) => {
-    res.send({
-        "wordTrieStr": wordTrieStr
-    });
+app.get("/wordTrieStr", (req, res, next) => {
+  res.send({
+    wordTrieStr: wordTrieStr,
+    reverseWordTrieStr: reverseWordTrieStr,
+  });
 });
 
 const PORT = 3000;
