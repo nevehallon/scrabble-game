@@ -1,5 +1,6 @@
 import { getWordValues } from "./getRequests.js";
 import validate from "./boardValidator.js";
+import trie from "../src/trie-prefix-tree/index.js";
 
 async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
   console.log(gridState); //TODO: delete log!
@@ -90,7 +91,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     });
     // console.log(rivalRack, tiles); //TODO: remove me!!
   } else {
-    let startingCoords = [];
+    let startingCoords = {};
     let tilesPlayedCoords = [];
     let tilesPlayed = $("#board .tile").parent().toArray();
 
@@ -100,20 +101,102 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     let tileCompare = tilesPlayedCoords.map((x) => x.join(""));
 
     tilesPlayedCoords.forEach((coord) => {
-      let startCompare = startingCoords.map((x) => x.join(""));
+      // let startCompare = startingCoords.map((x) => x.join(""));
       let locations = [];
-      if (coord[0] !== 0) locations.push([coord[0] - 1, coord[1]]);
-      if (coord[0] !== 14) locations.push([coord[0] + 1, coord[1]]);
-      if (coord[1] !== 0) locations.push([coord[0], coord[1] - 1]);
-      if (coord[1] !== 14) locations.push([coord[0], coord[1] + 1]);
+      if (!tileCompare.includes([coord[0] - 1, coord[1]].join("")) && coord[0] !== 0)
+        locations.push({
+          // free: [coord[0] - 1, coord[1]],
+          free: coord,
+          branch: "up",
+        }); // one square up
+      if (!tileCompare.includes([coord[0] + 1, coord[1]].join("")) && coord[0] !== 14)
+        locations.push({
+          // free: [coord[0] + 1, coord[1]],
+          free: coord,
+          branch: "down",
+        }); // one square down
+      if (!tileCompare.includes([coord[0], coord[1] - 1].join("")) && coord[1] !== 0)
+        locations.push({
+          // free: [coord[0], coord[1] - 1],
+          free: coord,
+          branch: "left",
+        }); // one square left
+      if (!tileCompare.includes([coord[0], coord[1] + 1].join("")) && coord[1] !== 14)
+        locations.push({
+          // free: [coord[0], coord[1] + 1],
+          free: coord,
+          branch: "right",
+        }); // one square right
 
       locations.forEach((location) => {
-        if (!tileCompare.includes(location.join("")) && !startCompare.includes(location.join(""))) {
-          startingCoords.push(location);
+        // && !startCompare.includes(location.free.join(""))
+        // if (!tileCompare.includes(location.free.join(""))) {
+        if (!startingCoords[`${location.free.join("")}`]) {
+          startingCoords[`${location.free.join("")}`] = { coord: location.free, branch: [] };
         }
+
+        startingCoords[`${location.free.join("")}`].branch.push(location.branch);
+        // }
       });
     });
 
+    console.log(tilesPlayedCoords);
+
+    tilesPlayedCoords.forEach((tile) => {
+      let tileInfo = gridState.gridLetters[tile[0]][tile[1]];
+      console.log(tileInfo);
+      startingCoords[`${tile.join("")}`].branch.forEach((path) => {
+        if (path === "up") {
+          let suffix = [`${tileInfo.letter}`];
+          let suffixTally = [`${tileInfo.pointVal}`];
+          //check if and what letters follow bellow
+          let next = tile[0];
+          let checkNext = () => {
+            ++next;
+            let nextCoord = gridState.gridLetters[next][tile[1]];
+            if (nextCoord.letter !== " ") {
+              suffix.unshift(nextCoord.letter);
+              suffixTally.unshift(nextCoord.pointVal);
+              checkNext();
+            }
+            return;
+          };
+          checkNext();
+          let potentialWords = [];
+          let potentialPoints = [];
+          let rackCopy = rivalRack;
+          let blanks = 0;
+          console.log(suffix, suffixTally); // TODO delete me!!
+          //iterate over rack tiles and check for suffix with rack tile prepended to following letters
+          rivalRack.forEach((x, i, arr) => {
+            if (x.letter === " ") blanks++;
+
+            let checkSuffix = () => {
+              if (trie().isSuffix([...suffix, x.letter].join("").toLowerCase())) {
+                //isSuffix
+                potentialWords.push([...suffix, x.letter]);
+                potentialPoints.push([...suffixTally, x.pointVal]);
+                rackCopy.splice(i, 1, null);
+              }
+              console.log(potentialWords, potentialPoints, rackCopy);
+              return;
+            };
+            // checkSuffix();
+          });
+          // if there is a suffix then repeat until there is no suffix || no more tiles to add || can't make longer
+          // if false check if last valid suffix makes a word
+          // if word add letters and points to gridLetters,pointVal,letter => place pointTally + word in arr
+        }
+
+        if (path === "down") {
+        }
+        if (path === "left") {
+        }
+        if (path === "right") {
+        }
+      });
+    });
+    // startingCoords.forEach((coord) => {});
     // ?startingCoords = the squares on the board where we can build off from
     //>>>>>>>>>TODO: what pc does when it's not the first turn <<<<<<<<<<
   }

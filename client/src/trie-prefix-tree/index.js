@@ -6,25 +6,29 @@ import recurseRandomWord from "./recurseRandomWord.js";
 import utils from "./utils.js";
 import config from "./config.js";
 import permutations from "./permutations.js";
-// import { getWordTrieStr } from "../../js/getRequests.js";
-
-// let { localTrieStr, localReverseTrieStr } = getWordTrieStr();
-// console.log(localTrieStr);
-// console.log(localReverseTrieStr);
 
 const PERMS_MIN_LEN = config.PERMS_MIN_LEN;
 
-// const myTrie = JSON.parse(localStorage.getItem("wordTrieStr")) || JSON.parse(localTrieStr);
-// const myReverseTrie = JSON.parse(localStorage.getItem("reverseWordTrieStr")) || JSON.parse(localReverseTrieStr);
+let trie;
+let myTrie;
+let myReverseTrie;
+(async () => {
+  myTrie = JSON.parse(await localforage.getItem("wordTrieStr"));
+  trie = myTrie;
+})();
+(async () => {
+  myReverseTrie = JSON.parse(await localforage.getItem("reverseWordTrieStr"));
+  console.log("Trieadsg");
+})();
+
+// console.log(myTrie);
+// console.log(myReverseTrie);
 
 export default function (input) {
   // if(!Array.isArray(input)) {
   //   throw(`Expected parameter Array, received ${typeof input}`);
   // }
-
-  let isTrieReversed = false;
-
-  let trie = myTrie || create([...input]);
+  // let trie = create([...input]);
 
   return {
     /**
@@ -81,10 +85,6 @@ export default function (input) {
      * @returns Boolean
      */
     isPrefix(prefix) {
-      if (isTrieReversed) {
-        trie = myTrie;
-        isTrieReversed = !isTrieReversed;
-      }
       if (typeof prefix !== "string") {
         throw `Expected string prefix, received ${typeof prefix}`;
       }
@@ -99,17 +99,13 @@ export default function (input) {
      * @returns Boolean
      */
     isSuffix(suffix) {
-      if (!isTrieReversed) {
-        trie = myReverseTrie;
-        isTrieReversed = !isTrieReversed;
-      }
       if (typeof suffix !== "string") {
         throw `Expected string suffix, received ${typeof suffix}`;
       }
 
-      const { suffixFound } = checkPrefix(trie, suffix);
+      const { prefixFound } = checkPrefix(myReverseTrie, suffix); // prefixFound here actually refers to the suffix found
 
-      return suffixFound;
+      return prefixFound;
     },
 
     /**

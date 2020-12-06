@@ -1,3 +1,7 @@
+localforage.config({
+  driver: [localforage.INDEXEDDB, localforage.WEBSQL],
+  name: "Scrabble_Game",
+});
 import letters from "./scrabbleLetters.js";
 import { getWordTrieStr } from "./getRequests.js";
 import { calcPcMove } from "./compute.js";

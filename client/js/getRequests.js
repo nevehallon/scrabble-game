@@ -2,18 +2,16 @@ import letters from "./letterToPoints.js";
 
 async function getWordTrieStr() {
   try {
-    if (localStorage.getItem("wordTrieStr") && localStorage.getItem("reverseWordTrieStr")) {
+    if ((await localforage.getItem("wordTrieStr")) && (await localforage.getItem("reverseWordTrieStr"))) {
       return;
     }
     let {
       data: { wordTrieStr, reverseWordTrieStr },
     } = await axios.get(`http://localhost:3000/wordTrieStr`);
-    let localTrieStr = LZString.compress(wordTrieStr);
-    let localReverseTrieStr = LZString.compress(reverseWordTrieStr);
-    console.log(localTrieStr);
-    console.log(localReverseTrieStr);
-    localStorage.setItem("wordTrieStr", localTrieStr);
-    localStorage.setItem("reverseWordTrieStr", localReverseTrieStr); // TODO: find a way to fit into localStorage
+    let localTrieStr = wordTrieStr;
+    let localReverseTrieStr = reverseWordTrieStr;
+    await localforage.setItem("wordTrieStr", localTrieStr);
+    await localforage.setItem("reverseWordTrieStr", localReverseTrieStr);
   } catch (error) {
     console.error(error);
   }
