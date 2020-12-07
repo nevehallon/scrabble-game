@@ -142,47 +142,75 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
 
     console.log(tilesPlayedCoords);
 
+    let potentialWordsMain = [];
+
     tilesPlayedCoords.forEach((tile) => {
       let tileInfo = gridState.gridLetters[tile[0]][tile[1]];
       console.log(tileInfo);
       startingCoords[`${tile.join("")}`].branch.forEach((path) => {
         if (path === "up") {
           let suffix = [`${tileInfo.letter}`];
-          let suffixTally = [`${tileInfo.pointVal}`];
+          let suffixTally = [+`${tileInfo.pointVal}`];
           //check if and what letters follow bellow
           let next = tile[0];
           let checkNext = () => {
             ++next;
             let nextCoord = gridState.gridLetters[next][tile[1]];
             if (nextCoord.letter !== " ") {
+              //TODO make sure "nextCoord" is still on by comparing suffix.length + tile[0] !== 14
               suffix.unshift(nextCoord.letter);
-              suffixTally.unshift(nextCoord.pointVal);
+              suffixTally.unshift(+nextCoord.pointVal);
               checkNext();
             }
             return;
           };
           checkNext();
+          let checkedOut = []; //suffixes that have already been used to insure no repeats
           let potentialWords = [];
           let potentialPoints = [];
-          let rackCopy = rivalRack;
-          let blanks = 0;
+          // !!!!!numBlanks!!!!!
           console.log(suffix, suffixTally); // TODO delete me!!
           //iterate over rack tiles and check for suffix with rack tile prepended to following letters
-          rivalRack.forEach((x, i, arr) => {
-            if (x.letter === " ") blanks++;
 
-            let checkSuffix = () => {
-              if (trie().isSuffix([...suffix, x.letter].join("").toLowerCase())) {
+          let plus = 0;
+          let successPlus = 1;
+          let rackCopy = _.cloneDeep(rivalRack);
+          let checkSuffix = (suffixPlusLetter, suffixPlusPoints, success = false) => {
+            // let joined = [...suffix, x.letter].join("");
+            if (plus > 6 || successPlus > 5) return;
+            // if (success === false) successPlus = 0;
+
+            // console.log(success, successPlus, rivalRack[++successPlus].letter, successPlus, plus);
+            let letter = success ? rivalRack[++successPlus].letter : rivalRack[plus].letter;
+            let points = success ? rivalRack[successPlus].points : rivalRack[plus].points;
+            let nextJoined = success ? [...suffixPlusLetter, letter].join("") : [...suffix, letter].join("");
+            if (trie().isSuffix(nextJoined.toLowerCase())) {
+              if (!checkedOut.includes(nextJoined)) {
                 //isSuffix
-                potentialWords.push([...suffix, x.letter]);
-                potentialPoints.push([...suffixTally, x.pointVal]);
-                rackCopy.splice(i, 1, null);
+                checkedOut.push(nextJoined);
+                potentialWords.push(success ? [...suffixPlusLetter, letter] : [...suffix, letter]);
+                potentialPoints.push(success ? [...suffixPlusPoints, points] : [...suffixTally, points]);
+                rackCopy.splice(plus, 1, null);
+                checkSuffix(
+                  success ? [...suffixPlusLetter, letter] : [...suffix, letter],
+                  success ? [...suffixPlusPoints, points] : [...suffixTally, points],
+                  true
+                );
               }
-              console.log(potentialWords, potentialPoints, rackCopy);
-              return;
-            };
-            // checkSuffix();
-          });
+            }
+            //TODO: find a way to make sure that if we started check on an index bigger than 0 that we can wrap back around to the start of the array!!!!!!<<<<<<<<<<<<<<<<<<<<<<============
+            checkSuffix(
+              success ? [...suffixPlusLetter.slice(0, -1), letter] : [...suffix, letter],
+              success ? [...suffixPlusPoints.slice(0, -1), points] : [...suffixTally, points],
+              true
+            );
+            plus++;
+            successPlus = 1;
+            checkSuffix();
+          };
+          checkSuffix();
+
+          console.log(checkedOut, potentialWords, potentialPoints, rackCopy);
           // if there is a suffix then repeat until there is no suffix || no more tiles to add || can't make longer
           // if false check if last valid suffix makes a word
           // if word add letters and points to gridLetters,pointVal,letter => place pointTally + word in arr

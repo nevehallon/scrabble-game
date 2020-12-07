@@ -151,13 +151,15 @@ function zoomOut() {
 
 startGame(); //TODO: remove after done w/ pc move
 pcPlay(); //TODO: remove after done w/ pc move
-async function pcPlay() {
+function pcPlay() {
   console.log("pc's turn");
   playersTurn = false;
   //TODO:
   zoomOut();
-  let pcMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
-  // play(); //TODO: activate when pc can play valid moves
+  setTimeout(async () => {
+    let pcMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
+    // play(); //TODO: activate when pc can play valid moves
+  }, 70);
 }
 
 function endGame() {

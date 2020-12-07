@@ -18,7 +18,6 @@ let myReverseTrie;
 })();
 (async () => {
   myReverseTrie = JSON.parse(await localforage.getItem("reverseWordTrieStr"));
-  console.log("Trieadsg");
 })();
 
 // console.log(myTrie);
