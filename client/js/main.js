@@ -159,7 +159,7 @@ function pcPlay() {
   setTimeout(async () => {
     let pcMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
     // play(); //TODO: activate when pc can play valid moves
-  }, 70);
+  }, 75);
 }
 
 function endGame() {

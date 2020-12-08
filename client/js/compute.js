@@ -172,43 +172,105 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           console.log(suffix, suffixTally); // TODO delete me!!
           //iterate over rack tiles and check for suffix with rack tile prepended to following letters
 
-          let plus = 0;
-          let successPlus = 1;
+          // let plus = 0;
+          // let successPlus = 0;
           let rackCopy = _.cloneDeep(rivalRack);
-          let checkSuffix = (suffixPlusLetter, suffixPlusPoints, success = false) => {
-            // let joined = [...suffix, x.letter].join("");
-            if (plus > 6 || successPlus > 5) return;
-            // if (success === false) successPlus = 0;
+          let s = 0;
+          let checkSuffix = (sPlus = 0) => {
+            sPlus = sPlus ? sPlus : s + 1;
+            if (s > 6 || sPlus > 6) return;
+            let letter = rivalRack[s].letter;
+            let points = rivalRack[s].points;
+            let joined = [...suffix, letter].join("");
+            let letterPlus = rivalRack[sPlus].letter;
+            let pointsPlus = rivalRack[sPlus].points;
+            let joinedPlus = [...suffix, rivalRack[s].letter, letterPlus].join("");
 
-            // console.log(success, successPlus, rivalRack[++successPlus].letter, successPlus, plus);
-            let letter = success ? rivalRack[++successPlus].letter : rivalRack[plus].letter;
-            let points = success ? rivalRack[successPlus].points : rivalRack[plus].points;
-            let nextJoined = success ? [...suffixPlusLetter, letter].join("") : [...suffix, letter].join("");
-            if (trie().isSuffix(nextJoined.toLowerCase())) {
-              if (!checkedOut.includes(nextJoined)) {
-                //isSuffix
-                checkedOut.push(nextJoined);
-                potentialWords.push(success ? [...suffixPlusLetter, letter] : [...suffix, letter]);
-                potentialPoints.push(success ? [...suffixPlusPoints, points] : [...suffixTally, points]);
-                rackCopy.splice(plus, 1, null);
-                checkSuffix(
-                  success ? [...suffixPlusLetter, letter] : [...suffix, letter],
-                  success ? [...suffixPlusPoints, points] : [...suffixTally, points],
-                  true
-                );
+            if (sPlus < s + 1) {
+              if (!checkedOut.includes(joined)) {
+                if (trie().isSuffix(joined.toLowerCase())) {
+                  checkedOut.push(joined);
+                  potentialWords.push([...suffix, letter]);
+                  potentialPoints.push([...suffixTally, points]);
+                }
               }
             }
-            //TODO: find a way to make sure that if we started check on an index bigger than 0 that we can wrap back around to the start of the array!!!!!!<<<<<<<<<<<<<<<<<<<<<<============
-            checkSuffix(
-              success ? [...suffixPlusLetter.slice(0, -1), letter] : [...suffix, letter],
-              success ? [...suffixPlusPoints.slice(0, -1), points] : [...suffixTally, points],
-              true
-            );
-            plus++;
-            successPlus = 1;
+            if (!checkedOut.includes(joinedPlus)) {
+              if (trie().isSuffix(joinedPlus.toLowerCase())) {
+                checkedOut.push(joinedPlus);
+                potentialWords.push([...joinedPlus]);
+                potentialPoints.push([...suffixTally, rivalRack[s].points, pointsPlus]);
+                checkSuffix(++sPlus);
+              }
+            }
+            s++;
             checkSuffix();
+            // if s !== 0 wrap back from 0 till i
           };
           checkSuffix();
+
+          // for (let i = 0; i < rivalRack.length; i++) {
+          //   let letter = rivalRack[i].letter;
+          //   let points = rivalRack[i].points;
+          //   let joined = [...suffix, letter].join("");
+
+          //   if (trie().isSuffix(joined.toLowerCase())) {
+          //     if (!checkedOut.includes(joined)) {
+          //       checkedOut.push(joined);
+          //       potentialWords.push([...suffix, letter]);
+          //       potentialPoints.push([...suffixTally, points]);
+
+          //       for (let j = i + 1; j < rivalRack.length; j++) {
+          //         letter = rivalRack[j].letter;
+          //         points = rivalRack[j].points;
+          //         joined = [...suffix, rivalRack[i].letter, letter].join("");
+          //         if (trie().isSuffix(joined.toLowerCase())) {
+          //           if (!checkedOut.includes(joined)) {
+          //             checkedOut.push(joined);
+          //             potentialWords.push([...suffix, letter]);
+          //             potentialPoints.push([...suffixTally, points]);
+          //           }
+          //         }
+          //       }
+          //     }
+          //   }
+          //   // if i !== 0 wrap back from 0 till i
+          // }
+
+          //#region recursive way
+          // let checkSuffix = (suffixPlusLetter, suffixPlusPoints, success = false) => {
+          //   // let joined = [...suffix, x.letter].join("");
+          //   if (plus > 6 || successPlus > 5) return;
+          //   // if (success === false) successPlus = 0;
+
+          //   // console.log(success, successPlus, rivalRack[++successPlus].letter, successPlus, plus);
+          //   let letter = success ? rivalRack[++successPlus].letter : rivalRack[plus].letter;
+          //   let points = success ? rivalRack[successPlus].points : rivalRack[plus].points;
+          //   let nextJoined = success ? [...suffixPlusLetter, letter].join("") : [...suffix, letter].join("");
+
+          //   if (trie().isSuffix(nextJoined.toLowerCase())) {
+          //     if (!checkedOut.includes(nextJoined)) {
+          //       //isSuffix
+          //       checkedOut.push(nextJoined);
+          //       potentialWords.push(success ? [...suffixPlusLetter, letter] : [...suffix, letter]);
+          //       potentialPoints.push(success ? [...suffixPlusPoints, points] : [...suffixTally, points]);
+          //       rackCopy.splice(plus, 1, null);
+
+          //       checkSuffix([...suffix, letter], [...suffixTally, points], true);
+          //     }
+          //   }
+
+          //   plus++;
+          //   checkSuffix(
+          //     success && potentialWords.length ? [...potentialWords.slice(-1)[0]] : undefined,
+          //     success && potentialPoints.length ? [...potentialPoints.slice(-1)[0]] : undefined,
+          //     true
+          //   );
+          //   successPlus = 0;
+          //   checkSuffix();
+          // };
+          // checkSuffix();
+          // #endregion
 
           console.log(checkedOut, potentialWords, potentialPoints, rackCopy);
           // if there is a suffix then repeat until there is no suffix || no more tiles to add || can't make longer
