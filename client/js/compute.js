@@ -2,6 +2,8 @@ import { getWordValues } from "./getRequests.js";
 import validate from "./boardValidator.js";
 import trie from "../src/trie-prefix-tree/index.js";
 
+const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+
 async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
   console.log(gridState); //TODO: delete log!
 
@@ -91,6 +93,8 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     });
     // console.log(rivalRack, tiles); //TODO: remove me!!
   } else {
+    // startingCoords.forEach((coord) => {});
+    // ?startingCoords = the squares on the board where we can build off from
     let startingCoords = {};
     let tilesPlayedCoords = [];
     let tilesPlayed = $("#board .tile").parent().toArray();
@@ -143,86 +147,132 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     console.log(tilesPlayedCoords);
 
     let potentialWordsMain = [];
+    // let potentialPointsMain = [];//?use or not?
 
     tilesPlayedCoords.forEach((tile) => {
       let tileInfo = gridState.gridLetters[tile[0]][tile[1]];
-      console.log(tileInfo);
-      startingCoords[`${tile.join("")}`].branch.forEach((path) => {
-        if (path === "up") {
-          let suffix = [`${tileInfo.letter}`];
-          let suffixTally = [+`${tileInfo.pointVal}`];
-          //check if and what letters follow bellow
-          let next = tile[0];
-          let checkNext = () => {
-            ++next;
-            let nextCoord = gridState.gridLetters[next][tile[1]];
-            if (nextCoord.letter !== " ") {
-              //TODO make sure "nextCoord" is still on by comparing suffix.length + tile[0] !== 14
-              suffix.unshift(nextCoord.letter);
-              suffixTally.unshift(+nextCoord.pointVal);
-              checkNext();
-            }
-            return;
-          };
-          checkNext();
-          let checkedOut = []; //suffixes that have already been used to insure no repeats
-          let level = {
-            _1: { potentialWords: [], potentialPoints: [] },
-            _2: { potentialWords: [], potentialPoints: [] },
-            _3: { potentialWords: [], potentialPoints: [] },
-            _4: { potentialWords: [], potentialPoints: [] },
-            _5: { potentialWords: [], potentialPoints: [] },
-            _6: { potentialWords: [], potentialPoints: [] },
-            _7: { potentialWords: [], potentialPoints: [] },
-          };
-          // !!!!!numBlanks!!!!!
-          console.log(suffix, suffixTally); // TODO delete me!!
-          //iterate over rack tiles and check for suffix with rack tile prepended to following letters
+      let addLimit = {
+        up: tile[0],
+        down: 14 - tile[0],
+        left: tile[1],
+        right: 14 - tile[1],
+      };
 
-          // let plus = 0;
-          // let successPlus = 0;
-          rivalRack = [
-            { letter: "R", points: "R2" },
-            { letter: "S", points: "S3" },
-            { letter: "E", points: "E4" },
-            { letter: "L", points: "L5" },
-            { letter: "V", points: "V6" },
-            { letter: "N", points: "N7" },
-            { letter: "O", points: "O8" },
-          ]; //TODO DELETE ME
-          console.log(
-            rivalRack,
-            rivalRack.map((x) => x.letter)
-          ); //TODO DELETE ME
+      //?>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>extend path<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      let extendPath = (path, isPre) => {
+        let potentialWordsMid = [];
+        let potentialPointsMid = [];
 
-          let rackCopy = _.cloneDeep(rivalRack);
-          let max = rivalRack.length - 1;
+        let set = isPre ? "prefix" : "suffix";
+        let setTally = `${isPre ? "prefix" : "suffix"}Tally`;
 
-          rivalRack.forEach((start, i) => {
-            let letter = start.letter;
+        let supply = {};
+
+        supply[set] = [`${tileInfo.letter}`];
+        supply[setTally] = [+`${tileInfo.pointVal}`]; //converts to number //?might be good to keep a string
+
+        console.log(supply);
+        //check if and what letters follow in opposite path direction
+        let nextX = tile[0];
+        let nextY = tile[1];
+        let checkNext = () => {
+          path === "up" ? ++nextX : path === "down" ? --nextX : path === "left" ? ++nextY : --nextY;
+          let nextCoord = gridState.gridLetters[nextX][nextY];
+          if (nextCoord.letter !== " ") {
+            supply[set].unshift(nextCoord.letter);
+            supply[setTally].unshift(+nextCoord.pointVal); //converts to number //?might be good to keep a string
+            checkNext();
+          }
+          return;
+        };
+
+        checkNext();
+        //TODO make sure "nextCoord" is still on by comparing suffix.length + tile[0] !== 14
+        let checkedOut = []; //suffixes that have already been used to insure no repeats
+        let level = {
+          _1: { potentialWords: [], potentialPoints: [], branch2: [] },
+          _2: { potentialWords: [], potentialPoints: [] },
+          _3: { potentialWords: [], potentialPoints: [] },
+          _4: { potentialWords: [], potentialPoints: [] },
+          _5: { potentialWords: [], potentialPoints: [] },
+          _6: { potentialWords: [], potentialPoints: [] },
+          _7: { potentialWords: [], potentialPoints: [] },
+        };
+        // !!!!!numBlanks!!!!!
+        console.log(supply[set], supply[setTally]); // TODO delete me!!
+        //iterate over rack tiles and check for suffix with rack tile prepended to following letters
+
+        // let plus = 0;
+        // let successPlus = 0;
+        rivalRack = [
+          { letter: "R", points: 1 },
+          { letter: "S", points: 1 },
+          { letter: "E", points: 1 },
+          { letter: "", points: 0 },
+          { letter: "", points: 0 },
+          { letter: "N", points: 1 },
+          { letter: "O", points: 1 },
+        ].sort((a, b) => (b.letter ? 1 : -1)); //TODO DELETE ME >>keep sort<<
+        console.log(
+          rivalRack,
+          rivalRack.map((x) => x.letter)
+        ); //TODO DELETE ME
+
+        // let rackCopy = _.cloneDeep(rivalRack);
+        // let max = rivalRack.length - 1;
+
+        rivalRack.forEach((start, i) => {
+          let letter = start.letter;
+          let run = () => {
+            if (!letter) return;
             let points = start.points;
-            let joined = [...suffix, letter].join("");
+            let joined = [...supply[set], letter].join("");
             if (!checkedOut.includes(joined)) {
-              if (trie().isSuffix(joined)) {
+              if (isPre ? trie().isPrefix(joined) : trie().isSuffix(joined)) {
                 checkedOut.push(joined);
                 level._1.potentialWords.push({
-                  a: [...suffix, letter],
+                  a: [...supply[set], letter],
                   b: rivalRack.filter((x, index) => index !== i).map((x) => x.letter),
                 });
                 level._1.potentialPoints.push({
-                  a: [...suffixTally, points],
+                  a: [...supply[setTally], points],
                   b: rivalRack.filter((x, index) => index !== i).map((x) => x.points),
                 });
+                if (trie().hasWord([...joined].reverse().join(""))) {
+                  level._1.branch2.push({
+                    l: [...supply[set], letter],
+                    b: [...supply[setTally], points],
+                  });
+                }
               }
             }
-          });
-          let checkLevel = (prev, cur) => {
-            prev.potentialWords.forEach((start, i) => {
-              start.b.forEach((letter, i2) => {
+          };
+          run();
+          if (!letter) {
+            abc.forEach((joker) => {
+              letter = joker;
+              run();
+            });
+          }
+        });
+        //TODO: check which level._1.branch2 array make a word
+        //          !!if there is a word check for branch off in 90-deg (suf+pre)
+        let nextCellInfo;
+        let checkLevel = (prev, cur) => {
+          prev.potentialWords.forEach((start, i) => {
+            start.b.forEach((letter, i2) => {
+              let run = () => {
+                if (!letter) return;
+
                 let points = prev.potentialPoints[i].b[i2];
+                if (nextCellInfo !== undefined && nextCellInfo.letter !== " ") {
+                  letter = nextCellInfo.letter;
+                  points = nextCellInfo.pointVal; //?string number value (can help determine which cells are taken)
+                  i2 = 8;
+                }
                 let joined = [...start.a, letter].join("");
                 if (!checkedOut.includes(joined)) {
-                  if (trie().isSuffix(joined)) {
+                  if (isPre ? trie().isPrefix(joined) : trie().isSuffix(joined)) {
                     checkedOut.push(joined);
                     cur.potentialWords.push({
                       a: [...start.a, letter],
@@ -230,36 +280,90 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     });
                     cur.potentialPoints.push({
                       a: [...prev.potentialPoints[i].a, points],
-                      b: prev.potentialPoints[i].b.filter((x, index) => index !== i),
+                      b: prev.potentialPoints[i].b.filter((x, index) => index !== i2),
                     });
                     let test = null;
                   }
                 }
-              });
+              };
+              run();
+              if (!letter) {
+                abc.forEach((joker) => {
+                  letter = joker;
+                  run();
+                });
+              }
             });
-          };
-          if (rivalRack.length > 1) {
-            for (let j = 1; j < rivalRack.length - 1; j++) {
+          });
+        };
+        // gridState.gridLetters[1][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " }; // checking with interrupting tiles
+        // gridState.gridLetters[2][7] = { letter: "N", id: "34", pointVal: "taken3", hot: " " };
+        // gridState.gridLetters[3][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " };
+        // gridState.gridLetters[4][7] = { letter: "G", id: "34", pointVal: "taken2", hot: " " };
+        // gridState.gridLetters[5][7] = { letter: "A", id: "34", pointVal: "taken1", hot: " " };
+
+        // if there is a suffix then repeat until there is no suffix || no more tiles to add || can't make longer
+        if (rivalRack.length > 1) {
+          for (let j = 1; j < rivalRack.length; j++) {
+            if (j + 1 <= addLimit[`${path}`]) {
+              let x = path === "up" ? tile[0] - (j + 1) : path === "down" ? tile[0] + (j + 1) : tile[0];
+              let y = path === "left" ? tile[1] - (j + 1) : path === "right" ? tile[1] + (j + 1) : tile[1];
+
+              nextCellInfo = gridState.gridLetters[x][y];
+              // console.log(x, y, nextCellInfo); //? displays cell info by coord
+
               checkLevel(level[`_${j}`], level[`_${j + 1}`]);
-              console.log("potentials2", level[`_${j + 1}`].potentialWords, level[`_${j + 1}`].potentialPoints);
+              // prettier-ignore
+              // console.log(`potentials${j + 1}`, level[`_${j + 1}`].potentialWords, level[`_${j + 1}`].potentialPoints); //?rest of the levels one by one
+
+              potentialWordsMid.unshift(...level[`_${j + 1}`].potentialWords);
+              potentialPointsMid.unshift(...level[`_${j + 1}`].potentialPoints);
             }
           }
-          console.log("checkedOut:", checkedOut, level._1.potentialWords, level._1.potentialPoints, rackCopy);
-          // if there is a suffix then repeat until there is no suffix || no more tiles to add || can't make longer
-          // if false check if last valid suffix makes a word
-          // if word add letters and points to gridLetters,pointVal,letter => place pointTally + word in arr
+        }
+        // console.log("checkedOut:", checkedOut, level._1.potentialWords, level._1.potentialPoints, rackCopy);//? level one<<<<<<
+        console.log("W-Mid:", potentialWordsMid, "P-Mid:", potentialPointsMid);
+        console.log(level._1.branch2); //? tangent branch
+        // check starting from the longest suffix if word -> put words in "main" array with path
+
+        for (let i = 0; i < potentialWordsMid.slice(0, 22).length; i++) {
+          // cap words to 22
+          let word = potentialWordsMid[i];
+          let setWord = isPre ? word.a : word.a.reverse();
+          let setPoints = isPre ? potentialPointsMid[i].a : potentialPointsMid[i].a.reverse();
+
+          if (trie().hasWord(setWord.join(""))) {
+            potentialWordsMain.push({
+              numHotTiles: 7 - word.b.length,
+              startCoord: [tile[0], tile[1]],
+              word: setWord,
+              points: setPoints,
+              path,
+              reverseOrder: isPre ? false : true,
+            });
+          }
+        }
+        console.log("mainWords", potentialWordsMain);
+
+        // if word add letters and points to gridLetters,pointVal,letter => place pointTally + word in arr
+      };
+      startingCoords[`${tile.join("")}`].branch.forEach((path) => {
+        if (path === "up") {
+          extendPath(path, false); //?parameters ==> (path: string, isPrefix: boolean)
         }
 
         if (path === "down") {
+          extendPath(path, true);
         }
         if (path === "left") {
+          extendPath(path, false);
         }
         if (path === "right") {
+          extendPath(path, true);
         }
       });
+      //TODO: >>>>>>>  iterate over main words => place on board => validate() && get Score => rank descending pick best =>render
     });
-    // startingCoords.forEach((coord) => {});
-    // ?startingCoords = the squares on the board where we can build off from
     //>>>>>>>>>TODO: what pc does when it's not the first turn <<<<<<<<<<
   }
   //   return the var holding -> {rivalRack, score: bestWord.pointTally, newWordsLogged};TODO:

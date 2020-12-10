@@ -7,9 +7,9 @@ import { getWordTrieStr } from "./getRequests.js";
 import { calcPcMove } from "./compute.js";
 import { gridState, updateGameState } from "./createGrid.js";
 import validate from "./boardValidator.js";
-import trie from "../src/trie-prefix-tree/index.js";
+// import trie from "../src/trie-prefix-tree/index.js";
 
-console.log(trie);
+// console.log(trie);
 
 let playerScore = 0;
 let computerScore = 0;
@@ -156,10 +156,11 @@ function pcPlay() {
   playersTurn = false;
   //TODO:
   zoomOut();
+  rivalRack.sort((a, b) => (b.letter ? 1 : -1)); //make sure that blanks are last tile
   setTimeout(async () => {
     let pcMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
     // play(); //TODO: activate when pc can play valid moves
-  }, 85);
+  }, 105); //TODO: implement a way to retry if call fails //experiment with 50ms
 }
 
 function endGame() {
