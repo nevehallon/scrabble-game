@@ -160,7 +160,7 @@ function pcPlay() {
   setTimeout(async () => {
     let pcMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
     // play(); //TODO: activate when pc can play valid moves
-  }, 105); //TODO: implement a way to retry if call fails //experiment with 50ms
+  }, 110); //TODO: implement a way to retry if call fails //experiment with 50ms
 }
 
 function endGame() {

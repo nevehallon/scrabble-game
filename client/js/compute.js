@@ -171,11 +171,11 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         supply[set] = [`${tileInfo.letter}`];
         supply[setTally] = [+`${tileInfo.pointVal}`]; //converts to number //?might be good to keep a string
 
-        console.log(supply);
-        //check if and what letters follow in opposite path direction
+        // console.log(supply);
         let nextX = tile[0];
         let nextY = tile[1];
         let checkNext = () => {
+          //check if and what letters follow in opposite path direction
           path === "up" ? ++nextX : path === "down" ? --nextX : path === "left" ? ++nextY : --nextY;
           let nextCoord = gridState.gridLetters[nextX][nextY];
           if (nextCoord.letter !== " ") {
@@ -221,6 +221,34 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         // let rackCopy = _.cloneDeep(rivalRack);
         // let max = rivalRack.length - 1;
 
+        gridState.gridLetters[5][5] = { letter: "Z", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
+        gridState.gridLetters[5][6] = { letter: " ", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
+        gridState.gridLetters[5][7] = { letter: " ", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
+        gridState.gridLetters[5][8] = { letter: "Q", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
+
+        nextX = tile[0]; //resetting value
+        nextY = tile[1]; //resetting value
+        let mod1 = path === "up" || path === "down" ? 1 : 0;
+        let mod2 = mod1 ? 0 : 1;
+        path === "up" ? --nextX : path === "down" ? ++nextX : path === "left" ? --nextY : ++nextY;
+
+        let cellsB4 = "";
+        let cellsAfter = "";
+
+        for (let k = 0; k < 12; k++) {
+          if (mod1 && k) ++mod1;
+          if (mod2 && k) ++mod2;
+          if (nextY - mod1 >= 0 && nextX - mod2 >= 0) {
+            cellsB4 += gridState.gridLetters[nextX - mod2][nextY - mod1].letter;
+          }
+          if (nextY + mod1 <= 14 && nextX + mod2 <= 14) {
+            cellsAfter += gridState.gridLetters[nextX + mod2][nextY + mod1].letter;
+          }
+        }
+
+        cellsB4 = cellsB4.split(" ")[0];
+        cellsAfter = cellsAfter.split(" ")[0];
+
         rivalRack.forEach((start, i) => {
           let letter = start.letter;
           let run = () => {
@@ -228,6 +256,12 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let points = start.points;
             let joined = [...supply[set], letter].join("");
             if (!checkedOut.includes(joined)) {
+              //check if the cells on either side of the new tile make a word together
+              // console.log(nextX, nextY, mod1, mod2);
+
+              let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
+
+              if (cellsJoined.length > 1 && !trie().hasWord(cellsJoined)) return;
               if (isPre ? trie().isPrefix(joined) : trie().isSuffix(joined)) {
                 checkedOut.push(joined);
                 level._1.potentialWords.push({
@@ -239,6 +273,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                   b: rivalRack.filter((x, index) => index !== i).map((x) => x.points),
                 });
                 if (trie().hasWord([...joined].reverse().join(""))) {
+                  //setting up 'word tangents'
                   level._1.branch2.push({
                     l: [...supply[set], letter],
                     b: [...supply[setTally], points],
@@ -259,6 +294,27 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         //          !!if there is a word check for branch off in 90-deg (suf+pre)
         let nextCellInfo;
         let checkLevel = (prev, cur) => {
+          path === "up" ? --nextX : path === "down" ? ++nextX : path === "left" ? --nextY : ++nextY;
+          cellsB4 = "";
+          cellsAfter = "";
+          mod1 = path === "up" || path === "down" ? 1 : 0;
+          mod2 = mod1 ? 0 : 1;
+
+          for (let k = 0; k < 12; k++) {
+            if (mod1 && k) ++mod1;
+            if (mod2 && k) ++mod2;
+
+            if (nextY - mod1 >= 0 && nextX - mod2 >= 0) {
+              cellsB4 += gridState.gridLetters[nextX - mod2][nextY - mod1].letter;
+            }
+            if (nextY + mod1 <= 14 && nextX + mod2 <= 14) {
+              cellsAfter += gridState.gridLetters[nextX + mod2][nextY + mod1].letter;
+            }
+          }
+
+          cellsB4 = cellsB4.split(" ")[0];
+          cellsAfter = cellsAfter.split(" ")[0];
+
           prev.potentialWords.forEach((start, i) => {
             start.b.forEach((letter, i2) => {
               let run = () => {
@@ -269,6 +325,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                   letter = nextCellInfo.letter;
                   points = nextCellInfo.pointVal; //?string number value (can help determine which cells are taken)
                   i2 = 8;
+                } else {
+                  let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
+                  if (cellsJoined.length > 1 && !trie().hasWord(cellsJoined)) return;
                 }
                 let joined = [...start.a, letter].join("");
                 if (!checkedOut.includes(joined)) {
@@ -296,7 +355,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             });
           });
         };
-        // gridState.gridLetters[1][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " }; // checking with interrupting tiles
+        // gridState.gridLetters[1][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
         // gridState.gridLetters[2][7] = { letter: "N", id: "34", pointVal: "taken3", hot: " " };
         // gridState.gridLetters[3][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " };
         // gridState.gridLetters[4][7] = { letter: "G", id: "34", pointVal: "taken2", hot: " " };
@@ -353,13 +412,13 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         }
 
         if (path === "down") {
-          extendPath(path, true);
+          // extendPath(path, true); //TODO: reactivate
         }
         if (path === "left") {
-          extendPath(path, false);
+          // extendPath(path, false);//TODO: reactivate
         }
         if (path === "right") {
-          extendPath(path, true);
+          // extendPath(path, true);//TODO: reactivate
         }
       });
       //TODO: >>>>>>>  iterate over main words => place on board => validate() && get Score => rank descending pick best =>render
@@ -367,6 +426,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     //>>>>>>>>>TODO: what pc does when it's not the first turn <<<<<<<<<<
   }
   //   return the var holding -> {rivalRack, score: bestWord.pointTally, newWordsLogged};TODO:
+  // console.log(trie().hasWord("zi"));
 }
 
 export { calcPcMove };
