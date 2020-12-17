@@ -159,6 +159,7 @@ function pcPlay() {
   rivalRack.sort((a, b) => (b.letter ? 1 : -1)); //make sure that blanks are last tile
   setTimeout(async () => {
     let pcMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
+    console.log(pcMove);
     // play(); //TODO: activate when pc can play valid moves
   }, 110); //TODO: implement a way to retry if call fails //experiment with 50ms
 }

@@ -10,6 +10,16 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
   let rack = [];
   let numBlanks = 0;
 
+  // rivalRack = [
+  //   { letter: "Z", points: 1 },
+  //   { letter: "Z", points: 1 },
+  //   { letter: "Z", points: 1 },
+  //   { letter: "Z", points: 0 },
+  //   { letter: "Z", points: 0 },
+  //   { letter: "Z", points: 1 },
+  //   { letter: "Z", points: 1 },
+  // ].sort((a, b) => (b.letter ? 1 : -1)); //TODO DELETE ME >>keep sort<<
+
   rivalRack.forEach((x) => {
     if (!x.letter) numBlanks++;
     rack.push(x.letter);
@@ -19,7 +29,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
   console.log(wordSet); //TODO: delete log!
 
   if (firstTurn) {
-    if (!wordSet.length) return; //TODO:return and set var {rivalRack, score: bestWord.pointTally, newWordsLogged}
+    if (!wordSet.length) return false;
     let extraCount = 0;
     let candidates = [];
     let wordSlice = wordSet.slice(0, 5);
@@ -92,6 +102,8 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       }
     });
     // console.log(rivalRack, tiles); //TODO: remove me!!
+    wordsLogged.push(bestWord.word);
+    return { rivalRack: rivalRack, score: bestWord.pointTally, wordsLogged };
   } else {
     // startingCoords.forEach((coord) => {});
     // ?startingCoords = the squares on the board where we can build off from
@@ -160,12 +172,11 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
 
       //?>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>extend path<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       let extendPath = (path, isPre) => {
-        let potentialWordsMid = [];
-        let potentialPointsMid = [];
+        let potentialBranchMid = [];
 
         let potentialBranch2Mid = [];
         // let potentiallettersMid = [];
-        // let potentialPointsMid = [];
+        // let potentialBranchMid = [];
         // let potentialdetailssMid = [];
 
         let set = isPre ? "prefix" : "suffix";
@@ -276,8 +287,8 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     b: rivalRack.filter((x, index) => index !== i).map((x) => x.letter),
                   },
                   points: {
-                    a: [...supply[set], letter],
-                    b: rivalRack.filter((x, index) => index !== i).map((x) => x.letter),
+                    a: [...supply[setTally], points],
+                    b: rivalRack.filter((x, index) => index !== i).map((x) => x.points),
                   },
                 });
                 // level._1.potentialWords.push({
@@ -648,6 +659,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                         a: [...prev[i].points.a, points],
                         b: prev[i].points.b.filter((x, index) => index !== (taken ? 8 : i2)),
                       },
+                      startCoord: [nextX, nextY],
                     });
                     // cur[i].letters.push({
                     //   a: [...start[i].letters.a, letter],
@@ -685,7 +697,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             if (level[`_${j}`].branch2.length) {
               potentialBranch2Mid.unshift(...level[`_${j + 1}`].branch2);
               // potentiallettersMid.unshift(...level[`_${j + 1}`].letters);
-              // potentialPointsMid.unshift(...level[`_${j + 1}`].points);
+              // potentialBranchMid.unshift(...level[`_${j + 1}`].points);
               // potentialdetailssMid.unshift(...level[`_${j + 1}`].details);
             }
             // prettier-ignore
@@ -701,29 +713,33 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               // prettier-ignore
               // console.log(`potentials${j + 1}`, level[`_${j + 1}`].potentialWords, level[`_${j + 1}`].potentialPoints); //?rest of the levels one by one
 
-              potentialWordsMid.unshift(...level[`_${j + 1}`].potentialWords);
-              potentialPointsMid.unshift(...level[`_${j + 1}`].potentialPoints);
+              potentialBranchMid.unshift(...level[`_${j + 1}`].branch);
+              // potentialBranchMid.unshift(...level[`_${j + 1}`].potentialPoints);
             }
           }
         }
         // console.log("checkedOut:", checkedOut, level._1.potentialWords, level._1.potentialPoints, rackCopy);//? level one<<<<<<
-        // console.log("W-Mid:", potentialWordsMid, "P-Mid:", potentialPointsMid);
+        // console.log("W-Mid:", potentialBranchMid, "P-Mid:", potentialBranchMid);
         // console.log(level._1.branch2); //? tangent branch
         // check starting from the longest suffix if word -> put words in "main" array with path
-        let sliceNum = potentialWordsMid.slice(0, 22).length;
+        let sliceNum = potentialBranchMid.slice(0, 22).length;
 
         for (let i = 0; i < sliceNum; i++) {
           // cap number of words coming from each cell to 22
-          if (potentialWordsMid.length >= sliceNum) {
-            let word = potentialWordsMid[i];
+          if (potentialBranchMid.length >= sliceNum) {
+            let word = potentialBranchMid[i].letters;
             let setWord = isPre ? word.a : word.a.reverse();
-            let setPoints = isPre ? potentialPointsMid[i].a : potentialPointsMid[i].a.reverse();
+            let setPoints = isPre ? potentialBranchMid[i].points.a : potentialBranchMid[i].points.a.reverse();
 
             if (trie().hasWord(setWord.join(""))) {
               potentialWordsMain.push({
                 numHotTiles: 7 - word.b.length,
-                startCoord: [tile[0], tile[1]],
+                remaining: word.b.map((x, index) => {
+                  return { letter: x, points: potentialBranchMid[i].points.b[index] };
+                }),
+                startCoord: potentialBranchMid[i].startCoord,
                 word: setWord,
+                joined: setWord.join(""),
                 points: setPoints,
                 score: _.sum(setPoints),
                 path,
@@ -741,23 +757,25 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let word = potentialBranch2Mid[i].letters;
             // let setWord = isPre ? word.a : word.a.reverse();
             let setWord = word.a;
-            // let setPoints = isPre ? potentialPointsMid[i].a : potentialPointsMid[i].a.reverse();
+            // let setPoints = isPre ? potentialBranchMid[i].a : potentialBranchMid[i].a.reverse();
             let setPoints = potentialBranch2Mid[i].points.a;
 
             if (trie().hasWord(setWord.join(""))) {
-              potentialWordsMain.push({
-                a_set: supply[set].join(""),
-                numHotTiles: 7 - word.b.length,
-                startCoord: potentialBranch2Mid[i].details.coords,
-                word: setWord,
-                joined: setWord.join(""),
-                points: setPoints,
-                score: _.sum(setPoints),
-                path,
-                a_branch2: true,
-                a_isEnd: potentialBranch2Mid[i].details.isEnd,
-                reverseOrder: potentialBranch2Mid[i].details.isEnd ? true : false,
-              });
+              // potentialWordsMain.push({
+              //   a_set: supply[set].join(""),
+              //   numHotTiles: 7 - word.b.length,
+              // remaining: word.b.map((x, i) => {
+              //   return {letter: x, points: potentialBranchMid[i].points.b[i]};
+              // }),              //   startCoord: potentialBranch2Mid[i].details.coords,
+              //   word: setWord,
+              //   joined: setWord.join(""),
+              //   points: setPoints,
+              //   score: _.sum(setPoints),
+              //   path,
+              //   a_branch2: true,
+              //   a_isEnd: potentialBranch2Mid[i].details.isEnd,
+              //   reverseOrder: potentialBranch2Mid[i].details.isEnd ? true : false,
+              // });
             } else {
               sliceNum++;
             }
@@ -772,13 +790,13 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         //   })
         // );
         // console.log(potentiallettersMid.filter((x, index) => indexList.includes(index)));
-        // console.log(potentialPointsMid.filter((x, index) => indexList.includes(index)));
+        // console.log(potentialBranchMid.filter((x, index) => indexList.includes(index)));
         // console.log(indexList);
         // console.log("mainWords", potentialWordsMain);
         // console.log(
         //   "*******************",
         //   potentiallettersMid,
-        //   potentialPointsMid,
+        //   potentialBranchMid,
         //   potentialdetailssMid
         // );
 
@@ -792,15 +810,15 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
 
         if (path === "down") {
           // console.log("*******************2");
-          extendPath(path, true); //TODO: reactivate
+          // extendPath(path, true); //TODO: reactivate
         }
         if (path === "left") {
           // console.log("*******************3");
-          extendPath(path, false); //TODO: reactivate
+          // extendPath(path, false); //TODO: reactivate
         }
         if (path === "right") {
           // console.log("*******************4");
-          extendPath(path, true); //TODO: reactivate
+          // extendPath(path, true); //TODO: reactivate
         }
       });
 
@@ -817,74 +835,105 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     let extraCount = 0;
     let wordSlice = candidates.slice(0, 5);
     let extraIndex = [];
-    //TODO: Start and review here and downwards
+
+    console.log(wordSlice);
+    candidates = [];
     for (let x = 0; x < wordSlice.length; x++) {
       // if (wordSlice[x].word.length > 4 && x < 5) {
       //   wordSlice.push(wordSlice[x]);
       //   extraCount++;
       // }
-
+      let choice = wordSlice[x];
       let cleanGrid = _.cloneDeep(gridState);
-      let start = 7;
+      let start = choice.startCoord;
+      let gridOrder = [];
 
-      wordSlice[x].word
-        .toUpperCase()
-        .split("")
-        .forEach((letter, index) => {
-          let rackIndex = rack.findIndex((tile) => tile === letter);
-          let points = rackIndex === -1 ? 0 : rivalRack[rackIndex].points;
+      choice.word.forEach((letter, i) => {
+        let x;
+        let y;
 
-          if (4 < x && x < 4 + extraCount && points > 1 && index > 4) {
-            wordSlice.push(wordSlice[x]);
-            extraIndex.push(index);
-            // console.count();
+        if (!choice.hasOwnProperty("a_branch2")) {
+          if (choice.path === "up") {
+            x = choice.reverseOrder ? i : i * -1;
+            y = 0;
           }
-
-          if (x > 4 + extraCount) {
-            let bigIndex = extraIndex[candidates.length - (extraCount + 5)];
-            start = bigIndex === 5 ? 6 : 5;
-            // console.log(start, extraIndex, bigIndex);
+          if (choice.path === "down") {
+            x = choice.reverseOrder ? i * -1 : i;
+            y = 0;
           }
+          if (choice.path === "left") {
+            x = 0;
+            y = choice.reverseOrder ? i : i * -1;
+          }
+          if (choice.path === "right") {
+            x = 0;
+            y = choice.reverseOrder ? i * -1 : i;
+          }
+        } else {
+          if (choice.path === "up" || choice.path === "down") {
+            if (choice.a_isEnd) {
+              x = 0;
+              y = choice.reverseOrder ? i : i * -1;
+            } else {
+              x = 0;
+              y = choice.reverseOrder ? i * -1 : i;
+            }
+          } else {
+            if (choice.a_isEnd) {
+              x = choice.reverseOrder ? i : i * -1;
+              y = 0;
+            } else {
+              x = choice.reverseOrder ? i * -1 : i;
+              y = 0;
+            }
+          }
+        }
+        let isHot = true;
+        if (cleanGrid.gridLetters[start[0] + x][start[1] + y].hot === false) {
+          isHot = false;
+        }
+        // console.log(start[0] + x, start[1] + y);
+        cleanGrid.gridLetters[start[0] + x][start[1] + y].letter = letter;
+        cleanGrid.gridLetters[start[0] + x][start[1] + y].pointVal = choice.points[i];
+        cleanGrid.gridLetters[start[0] + x][start[1] + y].hot = isHot;
+        gridOrder.push({ x: start[0] + x, y: start[1] + y, taken: !isHot });
+      });
 
-          x < 5 && index === 0 && points > 1 && wordSlice[x].word.length > 4 ? (start = 3) : (start = start);
-
-          cleanGrid.gridLetters[7][start + index].letter = letter;
-          cleanGrid.gridLetters[7][start + index].pointVal = points;
-          cleanGrid.gridLetters[7][start + index].hot = true;
-        });
-
-      let { words, pointTally } = validate(cleanGrid, firstTurn, wordsLogged, false);
-      candidates.push({ word: words[0], pointTally, start });
+      let { pointTally } = validate(cleanGrid, firstTurn, wordsLogged, false);
+      candidates.push({
+        word: choice.word,
+        pointTally,
+        start,
+        remaining: choice.remaining,
+        gridOrder,
+        points: choice.points,
+      });
     }
 
     // console.log(rivalRack, rack); //TODO: delete log!
     // console.log(candidates, "ext: " + extraCount, "surplus: " + (candidates.length - (extraCount + 5)));
 
     let bestWord = _.orderBy(candidates, ["pointTally"], ["desc"])[0];
-    // console.log(bestWord);
+    console.log(bestWord);
 
     if (!bestWord) return false;
 
-    let tiles = [];
+    for (let i = 0; i < bestWord.word.length; i++) {
+      if (bestWord.gridOrder[i].taken) {
+        i++;
+      }
+      if (i < bestWord.word.length - 1) {
+        let letter = !bestWord.points[i] ? `<i>${bestWord.word[i]}</i>` : bestWord.word[i];
 
-    bestWord.word.split("").forEach((letter, index) => {
-      let rackIndex = rack.findIndex((tile) => tile === letter);
-      if (rackIndex === -1) rackIndex = rack.findIndex((tile) => tile === "");
-
-      if (rackIndex > -1) {
-        tiles.push(rivalRack[rackIndex]);
-
-        rack.splice(rackIndex, 1);
-        rivalRack.splice(rackIndex, 1);
-
-        letter = !tiles[index].points ? `<i>${letter}</i>` : letter;
-
-        $(`[data-location="7,${bestWord.start + index}"]`).append(
-          `<div data-drag="5" class="tile hot ui-draggable ui-draggable-handle" style="z-index: 7; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: medium; width: 50px; height: 55px;">${letter}<div style="bottom: 9px; left: 16px; font-weight: bolder; font-size: 8px;">${tiles[index].points}</div></div>`
+        $(`[data-location="${bestWord.gridOrder[i].x},${bestWord.gridOrder[i].y}"]`).append(
+          `<div data-drag="5" class="tile hot ui-draggable ui-draggable-handle" style="z-index: 7; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: medium; width: 50px; height: 55px;">${letter}<div style="bottom: 9px; left: 16px; font-weight: bolder; font-size: 8px;">${bestWord.points[i]}</div></div>`
         );
       }
-    });
+    }
+    wordsLogged.push(bestWord.word.join(""));
+    return { rivalRack: bestWord.remaining, score: bestWord.pointTally, wordsLogged };
   }
+
   //   return the var holding -> {rivalRack, score: bestWord.pointTally, newWordsLogged};TODO:
   // console.log(trie().hasWord("zi"));
 }
