@@ -3,9 +3,10 @@ import validate from "./boardValidator.js";
 import trie from "../src/trie-prefix-tree/index.js";
 
 const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+let idCount = 122;
 
 async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
-  console.log(gridState); //TODO: delete log!
+  // console.log(gridState); //TODO: delete log!
 
   let rack = [];
   let numBlanks = 0;
@@ -19,7 +20,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
   //   { letter: "Z", points: 1 },
   //   { letter: "Z", points: 1 },
   // ].sort((a, b) => (b.letter ? 1 : -1)); //TODO DELETE ME >>keep sort<<
-
+  // rivalRack = rivalRack.sort((a, b) => (b.letter ? 1 : -1));
   rivalRack.forEach((x) => {
     if (!x.letter) numBlanks++;
     rack.push(x.letter);
@@ -94,16 +95,24 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         rack.splice(rackIndex, 1);
         rivalRack.splice(rackIndex, 1);
 
+        gridState.gridLetters[7][bestWord.start + index].letter = letter;
+        gridState.gridLetters[7][bestWord.start + index].pointVal = tiles[index].points;
+        gridState.gridLetters[7][bestWord.start + index].hot = false;
+        gridState.gridLetters[7][bestWord.start + index].id = idCount;
+
         letter = !tiles[index].points ? `<i>${letter}</i>` : letter;
 
         $(`[data-location="7,${bestWord.start + index}"]`).append(
-          `<div data-drag="5" class="tile hot ui-draggable ui-draggable-handle" style="z-index: 7; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: medium; width: 50px; height: 55px;">${letter}<div style="bottom: 9px; left: 16px; font-weight: bolder; font-size: 8px;">${tiles[index].points}</div></div>`
+          `<div data-drag="${++idCount}" class="tile hot ui-draggable ui-draggable-handle" style="z-index: 7; left: 0px; top: 0px; position: relative; font-weight: bolder; font-size: medium; width: 50px; height: 55px;">${letter}<div style="bottom: 9px; left: 16px; font-weight: bolder; font-size: 8px;">${
+            tiles[index].points
+          }</div></div>`
         );
       }
     });
+    // console.log("word placed on board");
     // console.log(rivalRack, tiles); //TODO: remove me!!
     wordsLogged.push(bestWord.word);
-    return { rivalRack: rivalRack, score: bestWord.pointTally, wordsLogged };
+    return { rivalRack: rivalRack, pointTally: bestWord.pointTally, words: wordsLogged };
   } else {
     // startingCoords.forEach((coord) => {});
     // ?startingCoords = the squares on the board where we can build off from
@@ -221,19 +230,19 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
 
         // let plus = 0;
         // let successPlus = 0;
-        rivalRack = [
-          { letter: "R", points: 1 },
-          { letter: "S", points: 1 },
-          { letter: "E", points: 1 },
-          { letter: "", points: 0 },
-          { letter: "", points: 0 },
-          { letter: "N", points: 1 },
-          { letter: "A", points: 1 },
-        ].sort((a, b) => (b.letter ? 1 : -1)); //TODO DELETE ME >>keep sort<<
-        console.log(
-          rivalRack,
-          rivalRack.map((x) => x.letter)
-        ); //TODO DELETE ME
+        // rivalRack = [
+        //   { letter: "R", points: 1 },
+        //   { letter: "S", points: 1 },
+        //   { letter: "E", points: 1 },
+        //   { letter: "", points: 0 },
+        //   { letter: "", points: 0 },
+        //   { letter: "N", points: 1 },
+        //   { letter: "A", points: 1 },
+        // ].sort((a, b) => (b.letter ? 1 : -1)); //TODO DELETE ME >>keep sort<<
+        // console.log(
+        //   rivalRack,
+        //   rivalRack.map((x) => x.letter)
+        // ); //TODO DELETE ME
 
         // let rackCopy = _.cloneDeep(rivalRack);
         // let max = rivalRack.length - 1;
@@ -368,16 +377,25 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           cellsAfter = "";
           let cellsB4Inverse = "";
           let cellsAfterInverse = "";
-          for (let k = 0; k < 13; k++) {
+          for (let k = 0; k < 12; k++) {
             if (mod1 && k) ++mod1;
             if (mod2 && k) ++mod2;
 
-            if (nextYRotated - mod1 >= 0 && nextXRotated - mod2 >= 0) {
+            if (nextXRotated - mod2 >= 0 && nextYRotated - mod1 >= 0) {
+              console.log("-B4", nextXRotated - mod2, nextYRotated - mod1);
               cellsB4 += gridState.gridLetters[nextXRotated - mod2][nextYRotated - mod1].letter;
+            }
+            if (nextXRotatedInverse - mod2 >= 0 && nextYRotatedInverse - mod1 >= 0) {
+              console.log("+B4 - I", nextXRotatedInverse - mod1, nextYRotatedInverse - mod2);
               cellsB4Inverse += gridState.gridLetters[nextXRotatedInverse - mod2][nextYRotatedInverse - mod1].letter;
             }
-            if (nextYRotated + mod1 <= 14 && nextXRotated + mod2 <= 14) {
+
+            if (nextXRotated + mod2 <= 14 && nextYRotated + mod1 <= 14) {
+              console.log("+After", nextXRotated + mod2, nextYRotated + mod1);
               cellsAfter += gridState.gridLetters[nextXRotated + mod2][nextYRotated + mod1].letter;
+            }
+            if (nextXRotatedInverse + mod2 <= 14 && nextYRotatedInverse + mod1 <= 14) {
+              console.log("+After - I", nextXRotatedInverse + mod1, nextYRotatedInverse + mod2);
               cellsAfterInverse += gridState.gridLetters[nextXRotatedInverse + mod2][nextYRotatedInverse + mod1].letter;
             }
           }
@@ -831,7 +849,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     let candidates = [...bingos, ...notBingos];
     console.log(candidates);
     //>>>>>>>>>TODO: what pc does when it's not the first turn <<<<<<<<<<
-    if (!candidates.length) return; //TODO:return and set var {rivalRack, score: bestWord.pointTally, newWordsLogged}
+    if (!candidates.length) return false;
     let extraCount = 0;
     let wordSlice = candidates.slice(0, 5);
     let extraIndex = [];
@@ -931,10 +949,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       }
     }
     wordsLogged.push(bestWord.word.join(""));
-    return { rivalRack: bestWord.remaining, score: bestWord.pointTally, wordsLogged };
+    return { rivalRack: bestWord.remaining, pointTally: bestWord.pointTally, words: wordsLogged };
   }
 
-  //   return the var holding -> {rivalRack, score: bestWord.pointTally, newWordsLogged};TODO:
+  //   return the var holding -> {rivalRack, pointTally: bestWord.pointTally, newWordsLogged};TODO:
   // console.log(trie().hasWord("zi"));
 }
 
