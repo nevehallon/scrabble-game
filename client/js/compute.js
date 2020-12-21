@@ -360,11 +360,25 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         let nextYRotatedInverse = nextY;
         let startingCell;
         let startingCellInverse;
+        let branch2StartingCoords;
+        let branch2StartingCoordsInverse;
         let count = 0;
         let checkBranchLevel = (prev, cur) => {
           // console.log(prev.letters);
           ++count;
           // if (count++) {
+          if (
+            nextXRotated === 0 ||
+            nextYRotated === 0 ||
+            nextXRotatedInverse === 0 ||
+            nextYRotatedInverse === 0 ||
+            nextXRotated === 14 ||
+            nextYRotated === 14 ||
+            nextXRotatedInverse === 14 ||
+            nextYRotatedInverse === 14
+          ) {
+            return;
+          }
           path === "up" || path === "down" ? --nextYRotated : --nextXRotated;
           path === "up" || path === "down" ? ++nextYRotatedInverse : ++nextXRotatedInverse;
           // console.log(nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
@@ -380,17 +394,22 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           ) {
             startingCell = gridState.gridLetters[nextXRotated][nextYRotated];
             startingCellInverse = gridState.gridLetters[nextXRotatedInverse][nextYRotatedInverse];
+            branch2StartingCoords = [nextXRotated, nextYRotated];
+            branch2StartingCoordsInverse = [nextXRotatedInverse, nextYRotatedInverse];
           }
           let borderCell;
           let borderCellInverse;
           if (path === "up" || path === "down") {
-            if (nextYRotated > 0) borderCell = gridState.gridLetters[nextXRotated][nextYRotated - 1];
-            if (nextYRotatedInverse < 14)
+            // if (path) console.log(nextXRotatedInverse, nextYRotatedInverse);
+            if (nextYRotated > 0 && nextYRotated < 14)
+              borderCell = gridState.gridLetters[nextXRotated][nextYRotated - 1];
+            if (nextYRotatedInverse < 14 && nextYRotatedInverse > 0)
               borderCellInverse = gridState.gridLetters[nextXRotatedInverse][nextYRotatedInverse + 1];
           } else {
-            // if (path === "left") console.log(nextXRotatedInverse + 1, nextYRotatedInverse);
-            if (nextXRotated > 0) borderCell = gridState.gridLetters[nextXRotated - 1][nextYRotated];
-            if (nextXRotatedInverse < 14)
+            // if (path) console.log(nextXRotatedInverse, nextYRotatedInverse);
+            if (nextXRotated > 0 && nextXRotated < 14)
+              borderCell = gridState.gridLetters[nextXRotated - 1][nextYRotated];
+            if (nextXRotatedInverse < 14 && nextXRotatedInverse > 0)
               borderCellInverse = gridState.gridLetters[nextXRotatedInverse + 1][nextYRotatedInverse];
           }
           // console.log(borderCellInverse);
@@ -490,7 +509,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                           a: [points, ...prev[i].points.a],
                           b: prev[i].points.b.filter((x, index) => index !== (taken ? 8 : i2)),
                         });
-                        temp1.details.push({ coords: [nextXRotated, nextYRotated], isEnd: false, type: 1 });
+                        temp1.details.push({ coords: branch2StartingCoords, isEnd: false, type: 1 });
                         // cur.details.push({ coords: [nextXRotated, nextYRotated], isEnd: false, type: 1 });
                         //!1.1
                         if (
@@ -525,7 +544,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                                     b: temp1.points[0].b.filter((x, index) => index !== (taken ? 8 : 0)),
                                   });
                                   temp1.details.unshift({
-                                    coords: [nextXRotatedInverse, nextYRotatedInverse],
+                                    coords: branch2StartingCoordsInverse,
                                     isEnd: true,
                                     type: 3,
                                   });
@@ -575,7 +594,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                           b: prev[i].points.b.filter((x, index) => index !== i2),
                         });
                         temp2.details.push({
-                          coords: [nextXRotatedInverse, nextYRotatedInverse],
+                          coords: branch2StartingCoordsInverse,
                           isEnd: true,
                           type: 2,
                         });
@@ -612,7 +631,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                                     b: temp2.points[0].b.filter((x, index) => index !== (taken ? 8 : 0)),
                                   });
                                   temp2.details.unshift({
-                                    coords: [nextXRotated, nextYRotated],
+                                    coords: branch2StartingCoords,
                                     isEnd: true,
                                     type: 3,
                                   });
@@ -809,19 +828,19 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let setPoints = isPre ? potentialBranchMid[i].points.a : potentialBranchMid[i].points.a.reverse();
 
             if (trie().hasWord(borderLetterInverse.concat(setWord.join("")))) {
-              potentialWordsMain.push({
-                numHotTiles: 7 - word.b.length,
-                remaining: word.b.map((x, index) => {
-                  return { letter: x, points: potentialBranchMid[i].points.b[index] };
-                }),
-                startCoord: potentialBranchMid[i].startCoord,
-                word: setWord,
-                joined: setWord.join(""),
-                points: setPoints,
-                score: _.sum(setPoints),
-                path,
-                reverseOrder: isPre ? true : false,
-              }); //?uncomment
+              // potentialWordsMain.push({
+              //   numHotTiles: 7 - word.b.length,
+              //   remaining: word.b.map((x, index) => {
+              //     return { letter: x, points: potentialBranchMid[i].points.b[index] };
+              //   }),
+              //   startCoord: potentialBranchMid[i].startCoord,
+              //   word: setWord,
+              //   joined: setWord.join(""),
+              //   points: setPoints,
+              //   score: _.sum(setPoints),
+              //   path,
+              //   reverseOrder: isPre ? true : false,
+              // }); //?uncomment
             } else {
               sliceNum++;
             }
@@ -838,21 +857,22 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let setPoints = potentialBranch2Mid[i].points.a;
 
             if (trie().hasWord(setWord.join(""))) {
-              // potentialWordsMain.push({
-              //   a_set: supply[set].join(""),
-              //   numHotTiles: 7 - word.b.length,
-              // remaining: word.b.map((x, i) => {
-              //   return {letter: x, points: potentialBranchMid[i].points.b[i]};
-              // }),              //   startCoord: potentialBranch2Mid[i].details.coords,
-              //   word: setWord,
-              //   joined: setWord.join(""),
-              //   points: setPoints,
-              //   score: _.sum(setPoints),
-              //   path,
-              //   a_branch2: true,
-              //   a_isEnd: potentialBranch2Mid[i].details.isEnd,
-              //   reverseOrder: potentialBranch2Mid[i].details.isEnd ? true : false,
-              // });
+              potentialWordsMain.push({
+                a_set: supply[set].join(""),
+                numHotTiles: 7 - word.b.length,
+                remaining: word.b.map((x, index) => {
+                  return { letter: x, points: potentialBranch2Mid[i].points.b[index] };
+                }),
+                startCoord: potentialBranch2Mid[i].details.coords,
+                word: setWord,
+                joined: setWord.join(""),
+                points: setPoints,
+                score: _.sum(setPoints),
+                path,
+                a_branch2: true,
+                a_isEnd: potentialBranch2Mid[i].details.isEnd,
+                reverseOrder: potentialBranch2Mid[i].details.isEnd ? true : false,
+              });
             } else {
               sliceNum++;
             }
@@ -954,23 +974,24 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           if (choice.path === "up" || choice.path === "down") {
             if (choice.a_isEnd) {
               x = 0;
-              y = choice.reverseOrder ? i : i * -1;
+              y = i * -1;
             } else {
               x = 0;
-              y = choice.reverseOrder ? i * -1 : i;
+              y = i;
             }
           } else {
             if (choice.a_isEnd) {
-              x = choice.reverseOrder ? i : i * -1;
+              x = i * -1;
               y = 0;
             } else {
-              x = choice.reverseOrder ? i * -1 : i;
+              x = i;
               y = 0;
             }
           }
         }
         let isHot = true;
-        // console.log(choice, start, start[0] + x, start[1] + y, letter);
+        console.log(choice);
+        console.log(choice, start, start[0] + x, start[1] + y, letter, choice.hasOwnProperty("a_branch2"));
         if (cleanGrid.gridLetters[start[0] + x][start[1] + y].hot === false) {
           isHot = false;
         }
