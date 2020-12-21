@@ -257,33 +257,40 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
       });
     });
 
+    let numHot = _.without(hotLetters, "").length ? _.without(hotLetters, "").sort().reverse()[0].length / 4 : 0;
     if (isPlayer) {
+      // console.log(hotLetters);
       if (_.without(hotLetters, "").length > potentialPoints.length + potentialZipPoints.length) {
         playError();
         throw "(57) The letters you play must lie on the same row or column, and must be connected to each other";
       }
+    }
 
-      _.without(words, ...wordsLogged).forEach((word) => {
-        if (!trie().hasWord(word)) {
+    let hasWords = true;
+    _.without(words, ...wordsLogged).forEach((word) => {
+      if (!trie().hasWord(word)) {
+        if (isPlayer) {
           playError();
           throw `The word: '${word}' is INVALID `;
+        } else {
+          hasWords = false;
         }
-        //check words validity
-      }); // passing in everything but words that have already been played to make sure we are only checking new words ->faster trie check
-    }
+      }
+      //check words validity
+    }); // passing in everything but words that have already been played to make sure we are only checking new words ->faster trie check
 
     let pointTally = [];
 
     potentialPoints.forEach((word, index) => {
       let isEmpty = wordMultiplier[index] === undefined || wordMultiplier[index] == 0 ? true : false;
-      if (word.length > 6) pointTally.push(50);
+      if (numHot > 6 && isPlayer) pointTally.push(50);
       if (isEmpty) return pointTally.push(_.sum(word));
       pointTally.push(_.sum(word) * _.sum(wordMultiplier[index]));
     });
 
     potentialZipPoints.forEach((word, index) => {
       let isEmpty = zipWordMultiplier[index] === undefined || zipWordMultiplier[index] == 0 ? true : false;
-      if (word.length > 7) pointTally.push(50);
+      if (numHot > 6 && isPlayer) pointTally.push(50);
       if (isEmpty) return pointTally.push(_.sum(word));
       pointTally.push(_.sum(word) * _.sum(zipWordMultiplier[index]));
     });
@@ -294,7 +301,11 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
       !$(".column .hot").length ? isNot() : $("#passPlay").text(`Play ${pointTally}`);
     }
 
-    return { words, pointTally }; //return wordsToBeLogged, totalPotentialPoints
+    if (hasWords) {
+      return { words, pointTally }; //return wordsToBeLogged, totalPotentialPoints
+    } else {
+      return { words, pointTally: 0 };
+    }
   } catch (error) {
     console.error(error);
     return error;

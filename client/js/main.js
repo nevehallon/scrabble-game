@@ -23,6 +23,8 @@ let isValidMove = false;
 let playersTurn = false;
 let wordsLogged = [];
 
+const debugging = true; //? change to true for the AI to play it self
+
 let bag = _.shuffle(_.shuffle(letters)); //TODO: change to const
 // bag = _.drop(bag, 80); //TODO: remove after tests
 let rivalRack = [];
@@ -58,7 +60,7 @@ function whoStarts() {
 
 function alertStarter(winner) {
   //TODO: alert user who plays first
-  console.log(winner);
+  // console.log(winner);
 }
 
 function startGame() {
@@ -89,7 +91,7 @@ function repaintBoard() {
   isValidMove = false;
   updateGameState();
   isValidMove = validate(gridState, firstTurn, wordsLogged, true);
-  console.log(isValidMove);
+  // console.log(isValidMove);
 }
 function bigTile(tile) {
   tile
@@ -154,35 +156,34 @@ function zoomOut() {
 startGame(); //TODO: remove after done w/ pc move
 // pcPlay(); //TODO: remove after done w/ pc move
 function pcPlay() {
-  console.log("pc's turn");
+  // console.log("pc's turn");
   playersTurn = false;
   //TODO:
   zoomOut();
   rivalRack.sort((a, b) => (b.letter ? 1 : -1)); //make sure that blanks are last tile
   setTimeout(async () => {
     isValidMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
-    console.log(isValidMove);
-    play();
+    // console.log(isValidMove);
+    isValidMove ? play() : pass();
   }, 110); //TODO: implement a way to retry if call fails //experiment with 50ms
 }
 
 function endGame() {
   //TODO:
+  throw "Game Over";
   //in modal display:
   //  both players points
   //  declare winner
   //  offer rematch
-  console.log("gameOver");
+  // console.log("gameOver");
 }
 
 function swap() {
   //TODO:
-  console.log("Swap");
+  // console.log("Swap");
   //show player's letters and ask which letters to swap
-
   //->if cancel
   //    close modal and return
-
   //->if confirm
   //    remove chosen letters
   //    pick new letters in exchange and place them on player's rack
@@ -201,7 +202,7 @@ function mix() {
 
 function recall() {
   if (!$(".column .hot").length) return;
-  console.log("Recall");
+  // console.log("Recall");
   //remove all "hot" tiles from ".column .hot" and re-add them to player's rack
   let toBeRecalled = $(".column .hot").toArray();
   $(".column .hot").remove();
@@ -216,7 +217,7 @@ function recall() {
 
 function pass(wasClicked = false) {
   //TODO:
-  console.log("turn passed");
+  // console.log("turn passed");
   //if param = true ->
   //    add to passCount
   if (wasClicked) passCount++;
@@ -231,18 +232,22 @@ function pass(wasClicked = false) {
     passCount = 0;
   }
   //    allow next turn
-  playersTurn ? pcPlay() : (playersTurn = true);
+  // if (debugging) firstTurn = false;
+  setTimeout(() => {
+    playersTurn || debugging ? pcPlay() : (playersTurn = true);
+  }, 250);
 }
 
 function play() {
   //TODO: make compatible with pc plays
+  if (!isValidMove.words && debugging) playersTurn = true;
   if (!isValidMove.words) return alert(isValidMove); //TODO: make into modal alert
-  console.log("word played");
+  // console.log("word played");
 
   if (isValidMove.hasOwnProperty("rivalRack")) {
     computerScore += isValidMove.pointTally;
     $("#pcScore").text(computerScore);
-    console.log("computerScore: ", computerScore);
+    // console.log("computerScore: ", computerScore);
     // add and display pc's score
   } else {
     playersTurn = true;
@@ -250,7 +255,7 @@ function play() {
   if (playersTurn) {
     playerScore += isValidMove.pointTally;
     $("#playerScore").text(playerScore);
-    console.log("playerScore: ", playerScore);
+    // console.log("playerScore: ", playerScore);
     //calculate and add points to "player"
   }
 
@@ -264,10 +269,11 @@ function play() {
       //remove multipliers from gridMultipliers
       let coords = tilesPlayed[i].getAttribute("data-location").split(",");
       gridState.gridMultipliers[+coords[0]][+coords[1]] = " ";
+      gridState.gridLetters[+coords[0]][+coords[1]].hot = false;
 
       if (bag.length) {
         let { letter, points } = _.pullAt(bag, [0])[0];
-        console.log(letter, points);
+        // console.log(letter, points);
         $(`#rack`).append(`
     <div data-drag=${++lettersUsed} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
     `);
@@ -275,17 +281,18 @@ function play() {
       }
     }
 
-    if (!bag.length && !$("#rack .tile").length) {
+    if (!bag.length && (!$("#rack .tile").length || !rivalRack.length)) {
       return endGame();
     }
 
-    console.log("letters used: ", lettersUsed);
+    // console.log("letters used: ", lettersUsed);
     $("#bagBtn").text(100 - lettersUsed);
     resetSortable();
 
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
     $("#board .hot").draggable("destroy").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]);
   } else {
+    rivalRack = isValidMove.rivalRack;
     let refill = $("#board .hot").length;
     let tilesPlayed = $("#board .hot").parent().toArray();
     //fill rack back up to 7 or what ever is left in bag
@@ -293,17 +300,19 @@ function play() {
       //remove multipliers from gridMultipliers
       let coords = tilesPlayed[i].getAttribute("data-location").split(",");
       gridState.gridMultipliers[+coords[0]][+coords[1]] = " ";
+      gridState.gridLetters[+coords[0]][+coords[1]].hot = false;
 
       if (bag.length) {
         rivalRack.push(_.pullAt(bag, [0])[0]);
         ++lettersUsed;
       }
     }
-    if (!bag.length && !$("#rack .tile").length) {
+    if (!bag.length && (!$("#rack .tile").length || !rivalRack.length)) {
+      console.log("Game!!");
       return endGame();
     }
 
-    console.log("letters used: ", lettersUsed);
+    // console.log("letters used: ", lettersUsed, rivalRack);
     $("#bagBtn").text(100 - lettersUsed);
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
     $("#board .hot").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]);
@@ -311,6 +320,7 @@ function play() {
   //set firstTurn & isValidMove to false
   if (firstTurn) firstTurn = false;
   isValidMove = false;
+
   $("#passPlay").text("Pass");
   pass();
 }
