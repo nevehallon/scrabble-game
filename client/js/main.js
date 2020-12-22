@@ -8,7 +8,7 @@ import { calcPcMove } from "./compute.js";
 import { gridState, updateGameState } from "./createGrid.js";
 import validate from "./boardValidator.js";
 // import trie from "../src/trie-prefix-tree/index.js";
-
+// ?  temp1.forEach((x,i) => console.log(trie().hasWord(x), i))
 // console.log(trie);
 
 let playerScore = 0;
@@ -78,6 +78,10 @@ function startGame() {
     deal2PC();
     playersTurn = true;
     alertStarter("you");
+    if (debugging) {
+      playersTurn = true;
+      pcPlay();
+    }
   } else {
     playersTurn = false;
     deal2PC();
@@ -164,12 +168,14 @@ function pcPlay() {
   setTimeout(async () => {
     isValidMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
     // console.log(isValidMove);
-    isValidMove ? play() : pass();
+    isValidMove ? play() : debugging ? false : pass();
   }, 110); //TODO: implement a way to retry if call fails //experiment with 50ms
 }
 
 function endGame() {
   //TODO:
+  //?prevent players from continuing
+  //?remove hot tiles from board
   throw "Game Over";
   //in modal display:
   //  both players points

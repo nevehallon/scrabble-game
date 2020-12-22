@@ -2,6 +2,8 @@ import { getWordValues } from "./getRequests.js";
 import validate from "./boardValidator.js";
 import trie from "../src/trie-prefix-tree/index.js";
 
+window.trie = trie; //! remove from window
+
 const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 let idCount = 122;
 
@@ -312,6 +314,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     a: [...supply[setTally], points],
                     b: rivalRack.filter((x, index) => index !== i).map((x) => x.points),
                   },
+                  startCoord: [nextX, nextY],
                 });
                 // level._1.potentialWords.push({
                 //   a: [...supply[set], letter],
@@ -367,35 +370,38 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           // console.log(prev.letters);
           ++count;
           // if (count++) {
-          if (
-            nextXRotated === 0 ||
-            nextYRotated === 0 ||
-            nextXRotatedInverse === 0 ||
-            nextYRotatedInverse === 0 ||
-            nextXRotated === 14 ||
-            nextYRotated === 14 ||
-            nextXRotatedInverse === 14 ||
-            nextYRotatedInverse === 14
-          ) {
-            return;
-          }
+
+          // if ((path === "up" || path === "down") && nextYRotated >= 1) {
+          //   --nextYRotated;
+          // }
+          // if ((path === "up" || path === "down") && nextYRotatedInverse <= 13) {
+          //   ++nextYRotatedInverse;
+          // }
+
+          // if ((path === "left" || path === "right") && nextXRotated >= 1) {
+          //   --nextXRotated;
+          // }
+          // if ((path === "left" || path === "right") && nextXRotatedInverse <= 13) {
+          //   ++nextXRotatedInverse;
+          // }
           path === "up" || path === "down" ? --nextYRotated : --nextXRotated;
           path === "up" || path === "down" ? ++nextYRotatedInverse : ++nextXRotatedInverse;
           // console.log(nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
+          if (nextXRotated >= 0 && nextYRotated >= 0 && nextXRotated <= 14 && nextYRotated <= 14) {
+            startingCell = gridState.gridLetters[nextXRotated][nextYRotated];
+            branch2StartingCoords = [nextXRotated, nextYRotated];
+          }
           if (
-            nextXRotated >= 0 &&
-            nextYRotated >= 0 &&
             nextXRotatedInverse >= 0 &&
             nextYRotatedInverse >= 0 &&
-            nextXRotated <= 14 &&
-            nextYRotated <= 14 &&
             nextXRotatedInverse <= 14 &&
             nextYRotatedInverse <= 14
           ) {
-            startingCell = gridState.gridLetters[nextXRotated][nextYRotated];
             startingCellInverse = gridState.gridLetters[nextXRotatedInverse][nextYRotatedInverse];
-            branch2StartingCoords = [nextXRotated, nextYRotated];
             branch2StartingCoordsInverse = [nextXRotatedInverse, nextYRotatedInverse];
+          }
+          if (branch2StartingCoords === undefined || branch2StartingCoordsInverse === undefined) {
+            // console.log(nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
           }
           let borderCell;
           let borderCellInverse;
@@ -498,23 +504,26 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     if (!checkedOut4Branch.includes(joined)) {
                       //?^^move to else condition without "!"^^?
                       if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
-                        checkedOut4Branch.push(joined); //?
-                        temp1.letters.push({
-                          // cur.letters.push({
-                          a: [letter, ...start.letters.a],
-                          b: start.letters.b.filter((x, index) => index !== i2),
-                        });
-                        temp1.points.push({
-                          // cur.points.push({
-                          a: [points, ...prev[i].points.a],
-                          b: prev[i].points.b.filter((x, index) => index !== (taken ? 8 : i2)),
-                        });
-                        temp1.details.push({ coords: branch2StartingCoords, isEnd: false, type: 1 });
-                        // cur.details.push({ coords: [nextXRotated, nextYRotated], isEnd: false, type: 1 });
+                        if (startingCell !== undefined) {
+                          checkedOut4Branch.push(joined); //?
+                          temp1.letters.push({
+                            // cur.letters.push({
+                            a: [letter, ...start.letters.a],
+                            b: start.letters.b.filter((x, index) => index !== i2),
+                          });
+                          temp1.points.push({
+                            // cur.points.push({
+                            a: [points, ...prev[i].points.a],
+                            b: prev[i].points.b.filter((x, index) => index !== (taken ? 8 : i2)),
+                          });
+                          temp1.details.push({ coords: branch2StartingCoords, isEnd: false, type: 1 });
+                          // cur.details.push({ coords: [nextXRotated, nextYRotated], isEnd: false, type: 1 });
+                        }
                         //!1.1
                         if (
-                          (temp1.letters[0].b.length && count === 1) ||
-                          (temp1.letters[0].b.length && prev[i].details.type === 3)
+                          ((temp1.letters[0]?.b?.length && count === 1) ||
+                            (temp1.letters[0]?.b?.length && prev[i].details.type === 3)) &&
+                          startingCellInverse !== undefined
                         ) {
                           let run4Type3 = () => {
                             let taken = false;
@@ -533,7 +542,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                               let boarderLetter = isBordered ? borderCellInverse.letter : "";
                               let joined = [...temp1.letters[0].a, letter, boarderLetter].join("");
                               if (!checkedOut4Branch.includes(joined)) {
-                                if (trie().isSuffix(joined.split("").reverse().join("") || trie().isPrefix(joined))) {
+                                if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
                                   checkedOut4Branch.push(joined); //?
                                   temp1.letters.unshift({
                                     a: [...temp1.letters[0].a, letter],
@@ -583,26 +592,29 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     let joined = [...start.letters.a, letter, boarderLetter].join("");
                     if (!checkedOut4Branch.includes(joined)) {
                       //?^^move to else condition without "!"^^?
-                      if (trie().isSuffix(joined.split("").reverse().join("") || trie().isPrefix(joined))) {
-                        checkedOut4Branch.push(joined); //?
-                        temp2.letters.unshift({
-                          a: [...start.letters.a, letter],
-                          b: start.letters.b.filter((x, index) => index !== (taken ? 8 : i2)),
-                        });
-                        temp2.points.unshift({
-                          a: [...prev[i].points.a, points],
-                          b: prev[i].points.b.filter((x, index) => index !== i2),
-                        });
-                        temp2.details.push({
-                          coords: branch2StartingCoordsInverse,
-                          isEnd: true,
-                          type: 2,
-                        });
+                      if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                        if (startingCellInverse !== undefined) {
+                          checkedOut4Branch.push(joined); //?
+                          temp2.letters.unshift({
+                            a: [...start.letters.a, letter],
+                            b: start.letters.b.filter((x, index) => index !== (taken ? 8 : i2)),
+                          });
+                          temp2.points.unshift({
+                            a: [...prev[i].points.a, points],
+                            b: prev[i].points.b.filter((x, index) => index !== i2),
+                          });
+                          temp2.details.push({
+                            coords: branch2StartingCoordsInverse,
+                            isEnd: true,
+                            type: 2,
+                          });
+                        }
                         let test = null;
                         //!  2.1
                         if (
-                          (temp2.letters[0].b.length && count === 1) ||
-                          (temp2.letters[0].b.length && prev[i].details.type === 3)
+                          ((temp2.letters[0]?.b?.length && count === 1) ||
+                            (temp2.letters[0]?.b?.length && prev[i].details.type === 3)) &&
+                          startingCell !== undefined
                         ) {
                           let run4Type3_2 = () => {
                             let taken = false;
@@ -620,7 +632,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                               let boarderLetter = isBordered ? borderCell.letter : "";
                               let joined = [boarderLetter, letter, ...temp2.letters[0].a].join("");
                               if (!checkedOut4Branch.includes(joined)) {
-                                if (trie().isSuffix(joined.split("").reverse().join("") || trie().isPrefix(joined))) {
+                                if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
                                   checkedOut4Branch.push(joined); //?
                                   temp2.letters.unshift({
                                     a: [letter, ...temp2.letters[0].a],
@@ -778,6 +790,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         // gridState.gridLetters[5][7] = { letter: "A", id: "34", pointVal: "taken1", hot: " " };
 
         // if there is a suffix then repeat until there is no suffix || no more tiles to add || can't make longer
+        if (level[`_1`].branch.length) {
+          potentialBranchMid.unshift(...level[`_1`].branch);
+        }
+
         if (rivalRack.length > 1) {
           for (let j = 1; j < rivalRack.length; j++) {
             checkBranchLevel(level[`_${j}`].branch2, level[`_${j + 1}`].branch2);
@@ -818,7 +834,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         // console.log("W-Mid:", potentialBranchMid, "P-Mid:", potentialBranchMid);
         // console.log(level._1.branch2); //? tangent branch
         // check starting from the longest suffix if word -> put words in "main" array with path
-        let sliceNum = potentialBranchMid.slice(0, 22).length;
+        if (!potentialBranchMid.length) {
+          console.log("no potentialBranchMid");
+        }
+        let sliceNum = potentialBranchMid.slice(0, 222).length;
 
         for (let i = 0; i < sliceNum; i++) {
           // cap number of words coming from each cell to 22
@@ -828,25 +847,28 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let setPoints = isPre ? potentialBranchMid[i].points.a : potentialBranchMid[i].points.a.reverse();
 
             if (trie().hasWord(borderLetterInverse.concat(setWord.join("")))) {
-              // potentialWordsMain.push({
-              //   numHotTiles: 7 - word.b.length,
-              //   remaining: word.b.map((x, index) => {
-              //     return { letter: x, points: potentialBranchMid[i].points.b[index] };
-              //   }),
-              //   startCoord: potentialBranchMid[i].startCoord,
-              //   word: setWord,
-              //   joined: setWord.join(""),
-              //   points: setPoints,
-              //   score: _.sum(setPoints),
-              //   path,
-              //   reverseOrder: isPre ? true : false,
-              // }); //?uncomment
+              potentialWordsMain.push({
+                numHotTiles: 7 - word.b.length,
+                remaining: word.b.map((x, index) => {
+                  return { letter: x, points: potentialBranchMid[i].points.b[index] };
+                }),
+                startCoord: potentialBranchMid[i].startCoord,
+                word: setWord,
+                joined: setWord.join(""),
+                points: setPoints,
+                score: _.sum(setPoints),
+                path,
+                reverseOrder: isPre ? true : false,
+              }); //?uncomment
             } else {
               sliceNum++;
             }
           }
         }
-        sliceNum = potentialBranch2Mid.slice(0, 92).length;
+        // if (!potentialBranch2Mid.length) {
+        //   console.log("no potentialBranch2Mid");
+        // }
+        sliceNum = potentialBranch2Mid.slice(0, 222).length;
         for (let i = 0; i < sliceNum; i++) {
           if (potentialBranch2Mid.length >= sliceNum) {
             // cap number of words coming from each cell to 22
@@ -922,6 +944,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
 
       //TODO: >>>>>>>  iterate over main words => place on board => validate() && get Score => rank descending pick best =>render
     });
+    if (!potentialWordsMain.length) {
+      console.log("no main words");
+    }
     let bingos = potentialWordsMain.filter((x) => x.numHotTiles === 7);
     let notBingos = potentialWordsMain.filter((x) => x.numHotTiles !== 7);
     notBingos = _.orderBy(notBingos, ["score"], ["desc"]);
@@ -929,19 +954,27 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     let candidates = [...bingos, ...notBingos];
     // console.log(candidates);
     //>>>>>>>>>TODO: what pc does when it's not the first turn <<<<<<<<<<
-    if (!candidates.length) return false;
-    let extraCount = 0;
-    let wordSlice = candidates.slice(0, 5);
-    let extraIndex = [];
+    if (!candidates.length) {
+      console.log("no words", rivalRack);
+      return false;
+    }
+    console.log("candidates:", candidates);
+    // let extraCount = 0;
+    let wordSlice = candidates.slice(0, 222);
+    // let extraIndex = [];
 
     // console.log(wordSlice);
     candidates = [];
-    for (let x = 0; x < wordSlice.length; x++) {
+    wordSlice.forEach((item, index) => {
+      if (!(item instanceof Object)) {
+        console.log(`candidate${index}:`, item);
+      }
       // if (wordSlice[x].word.length > 4 && x < 5) {
       //   wordSlice.push(wordSlice[x]);
       //   extraCount++;
       // }
-      let choice = wordSlice[x];
+      let badCookie = false;
+      let choice = wordSlice[index];
       let cleanGrid = _.cloneDeep(gridState);
       let start = choice.startCoord;
       let gridOrder = [];
@@ -950,6 +983,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         choice.points = choice.points.reverse();
       }
       choice.word.forEach((letter, i) => {
+        if (!(typeof letter === "string")) {
+          console.log(`choice.word${i}:`, letter);
+        }
         let x;
         let y;
 
@@ -989,9 +1025,16 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             }
           }
         }
+        if (start === undefined) {
+          console.log(start);
+        }
+        if (start[0] + x < 0 || start[1] + y < 0 || start[0] + x > 14 || start[1] + y > 14) {
+          badCookie = true;
+          return;
+        }
         let isHot = true;
-        console.log(choice);
-        console.log(choice, start, start[0] + x, start[1] + y, letter, choice.hasOwnProperty("a_branch2"));
+        // console.log(choice);
+        // console.log(choice, start, start[0] + x, start[1] + y, letter, choice.hasOwnProperty("a_branch2"));
         if (cleanGrid.gridLetters[start[0] + x][start[1] + y].hot === false) {
           isHot = false;
         }
@@ -1006,6 +1049,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       });
       // console.log(cleanGrid, wordsLogged);
       let { words, pointTally } = validate(cleanGrid, firstTurn, wordsLogged, false);
+      if (badCookie || pointTally === 0) return;
       pointTally = choice.remaining.length === 0 ? pointTally + 50 : pointTally;
 
       candidates.push({
@@ -1018,22 +1062,28 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         reverseOrder: choice.reverseOrder,
         wordsLogged: words,
       });
-    }
+    });
 
     // console.log(rivalRack, rack); //TODO: delete log!
     // console.log(candidates, "ext: " + extraCount, "surplus: " + (candidates.length - (extraCount + 5)));
 
     let bestWord = _.orderBy(candidates, ["pointTally"], ["desc"])[0];
-    // console.log(bestWord);
+    console.log("bestWord", bestWord, "candidates", candidates, rivalRack);
 
-    if (!bestWord) return false;
+    if (!bestWord) {
+      console.log("no words");
+      return false;
+    }
 
     for (let i = 0; i < bestWord.word.length; i++) {
       if (bestWord.gridOrder[i].taken) {
         i++;
       }
-      if (i < bestWord.word.length - 1) {
+      if (i < bestWord.word.length) {
+        // console.log("best word length:", bestWord.word.length);
+        // console.log($(`[data-location="${bestWord.gridOrder[i].x},${bestWord.gridOrder[i].y}"]`).children());
         if (!$(`[data-location="${bestWord.gridOrder[i].x},${bestWord.gridOrder[i].y}"]`).children().length) {
+          // console.count();
           gridState.gridLetters[bestWord.gridOrder[i].x][bestWord.gridOrder[i].y].letter = bestWord.word[i];
           gridState.gridLetters[bestWord.gridOrder[i].x][bestWord.gridOrder[i].y].pointVal = bestWord.points[i];
           gridState.gridLetters[bestWord.gridOrder[i].x][bestWord.gridOrder[i].y].hot = true;
