@@ -2,28 +2,16 @@ import { getWordValues } from "./getRequests.js";
 import validate from "./boardValidator.js";
 import trie from "../src/trie-prefix-tree/index.js";
 
-window.trie = trie; //! remove from window
+window.trie = trie; //! remove from window - used only for debugging
 
 const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 let idCount = 122;
 
 async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
-  // console.log(gridState); //TODO: delete log!
-
   let rack = [];
   let pointRack = [];
   let numBlanks = 0;
 
-  // rivalRack = [
-  //   { letter: "Z", points: 1 },
-  //   { letter: "Z", points: 1 },
-  //   { letter: "Z", points: 1 },
-  //   { letter: "Z", points: 0 },
-  //   { letter: "Z", points: 0 },
-  //   { letter: "Z", points: 1 },
-  //   { letter: "Z", points: 1 },
-  // ].sort((a, b) => (b.letter ? 1 : -1)); //TODO DELETE ME >>keep sort<<
-  // rivalRack = rivalRack.sort((a, b) => (b.letter ? 1 : -1));
   rivalRack.forEach((x) => {
     if (!x.letter) numBlanks++;
     rack.push(x.letter);
@@ -31,11 +19,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
   rivalRack.forEach((x) => {
     pointRack.push(x.points);
   });
-  // console.log(rivalRack, rack); //TODO: delete log!
 
   if (firstTurn) {
     let wordSet = await getWordValues(rack.join("").toLowerCase(), numBlanks);
-    // console.log(wordSet); //TODO: delete log!
     if (!wordSet.length) return false;
     let extraCount = 0;
     let candidates = [];
@@ -61,13 +47,11 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           if (4 < x && x < 4 + extraCount && points > 1 && index > 4) {
             wordSlice.push(wordSlice[x]);
             extraIndex.push(index);
-            // console.count();
           }
 
           if (x > 4 + extraCount) {
             let bigIndex = extraIndex[candidates.length - (extraCount + 5)];
             start = bigIndex === 5 ? 6 : 5;
-            // console.log(start, extraIndex, bigIndex);
           }
 
           x < 5 && index === 0 && points > 1 && wordSlice[x].word.length > 4 ? (start = 3) : (start = start);
@@ -81,11 +65,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       candidates.push({ word: words[0], pointTally, start });
     }
 
-    // console.log(rivalRack, rack); //TODO: delete log!
-    // console.log(candidates, "ext: " + extraCount, "surplus: " + (candidates.length - (extraCount + 5)));
-
     let bestWord = _.orderBy(candidates, ["pointTally"], ["desc"])[0];
-    // console.log(bestWord);
 
     if (!bestWord) return false;
 
@@ -115,14 +95,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         );
       }
     });
-    // console.log("word placed on board");
-    // console.log(rivalRack, tiles); //TODO: remove me!!
     wordsLogged.push(bestWord.word);
     return { rivalRack: rivalRack, pointTally: bestWord.pointTally, words: wordsLogged };
   } else {
-    // startingCoords.forEach((coord) => {});
-    // ?startingCoords = the squares on the board where we can build off from
-    let startingCoords = {};
+    let startingCoords = {}; //? the cells on the board where we can build off from
     let tilesPlayedCoords = [];
     let tilesPlayed = $("#board .tile").parent().toArray();
 
@@ -132,36 +108,29 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     let tileCompare = tilesPlayedCoords.map((x) => x.join(""));
 
     tilesPlayedCoords.forEach((coord) => {
-      // let startCompare = startingCoords.map((x) => x.join(""));
       let locations = [];
       if (!tileCompare.includes([coord[0] - 1, coord[1]].join("")) && coord[0] !== 0)
         locations.push({
-          // free: [coord[0] - 1, coord[1]],
           free: coord,
           branch: "up",
         }); // one square up
       if (!tileCompare.includes([coord[0] + 1, coord[1]].join("")) && coord[0] !== 14)
         locations.push({
-          // free: [coord[0] + 1, coord[1]],
           free: coord,
           branch: "down",
         }); // one square down
       if (!tileCompare.includes([coord[0], coord[1] - 1].join("")) && coord[1] !== 0)
         locations.push({
-          // free: [coord[0], coord[1] - 1],
           free: coord,
           branch: "left",
         }); // one square left
       if (!tileCompare.includes([coord[0], coord[1] + 1].join("")) && coord[1] !== 14)
         locations.push({
-          // free: [coord[0], coord[1] + 1],
           free: coord,
           branch: "right",
         }); // one square right
 
       locations.forEach((location) => {
-        // && !startCompare.includes(location.free.join(""))
-        // if (!tileCompare.includes(location.free.join(""))) {
         if (!startingCoords[`${location.free.join("")}`]) {
           startingCoords[`${location.free.join("")}`] = { coord: location.free, branch: [] };
         }
@@ -171,13 +140,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       });
     });
 
-    // console.log(tilesPlayedCoords);
-
     let potentialWordsMain = [];
-    // let potentialPointsMain = [];//?use or not?
 
     tilesPlayedCoords.forEach((tile) => {
-      // console.log({ tilesPlayedCoords, tile, hasOwnProperty: startingCoords.hasOwnProperty(tile.join("")) });
       if (!startingCoords.hasOwnProperty(tile.join(""))) return;
       let tileInfo = gridState.gridLetters[tile[0]][tile[1]];
       let addLimit = {
@@ -187,15 +152,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         right: 14 - tile[1],
       };
 
-      //?>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>extend path<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       let extendPath = (path, isPre) => {
-        // console.log({ path, isPre });
         let potentialBranchMid = [];
         let potentialNewBranchMid = [];
         let potentialBranch2Mid = [];
-        // let potentiallettersMid = [];
-        // let potentialBranchMid = [];
-        // let potentialdetailssMid = [];
 
         let set = isPre ? "prefix" : "suffix";
         let setTally = `${isPre ? "prefix" : "suffix"}Tally`;
@@ -203,9 +163,8 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         let supply = {};
 
         supply[set] = [`${tileInfo.letter}`];
-        supply[setTally] = [+`${tileInfo.pointVal}`]; //converts to number //?might be good to keep a string
+        supply[setTally] = [+`${tileInfo.pointVal}`]; //converts to number
 
-        // console.log(supply);
         let nextX = tile[0];
         let nextY = tile[1];
         let checkNext = () => {
@@ -217,7 +176,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           }
           if (nextCoord !== undefined && nextCoord.letter !== " ") {
             supply[set].unshift(nextCoord.letter);
-            supply[setTally].unshift(+nextCoord.pointVal); //converts to number //?might be good to keep a string
+            supply[setTally].unshift(+nextCoord.pointVal); //converts to number
             checkNext();
           }
           return;
@@ -225,9 +184,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
 
         checkNext();
         //TODO make sure "nextCoord" is still on by comparing suffix.length + tile[0] !== 14
-        let checkedOut = []; //suffixes that have already been used to insure no repeats
+        let checkedOut = []; //
         let checkedOut4Branch = []; //suffixes that have already been used to insure no repeats
-        let checkedOut4NewBranch = []; //suffixes that have already been used to insure no repeats
+        let checkedOut4NewBranch = []; //
         let level = {
           _0: { newBranch: [] },
           _1: { branch: [], potentialWords: [], potentialPoints: [], branch2: [], newBranch: [] },
@@ -238,34 +197,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           _6: { branch: [], potentialWords: [], potentialPoints: [], branch2: [], newBranch: [] },
           _7: { branch: [], potentialWords: [], potentialPoints: [], branch2: [], newBranch: [] },
         };
-        // !!!!!numBlanks!!!!!
-        // console.log(supply[set], supply[setTally]); // TODO delete me!!
-        //iterate over rack tiles and check for suffix with rack tile prepended to following letters
 
-        // let plus = 0;
-        // let successPlus = 0;
         // rivalRack = [...rivalRack.slice(0, 5), { letter: "", points: 0 }, { letter: "", points: 0 }]; //? uncomment to test how long it would take if every turn AI has two blanks
-        // rivalRack = [
-        //   { letter: "R", points: 1 },
-        //   { letter: "S", points: 1 },
-        //   { letter: "E", points: 1 },
-        //   { letter: "", points: 0 },
-        //   { letter: "", points: 0 },
-        //   { letter: "N", points: 1 },
-        //   { letter: "A", points: 1 },
-        // ].sort((a, b) => (b.letter ? 1 : -1)); //TODO DELETE ME >>keep sort<<
-        // console.log(
-        //   rivalRack,
-        //   rivalRack.map((x) => x.letter)
-        // ); //TODO DELETE ME
 
-        // let rackCopy = _.cloneDeep(rivalRack);
-        // let max = rivalRack.length - 1;
-
-        // gridState.gridLetters[6][5] = { letter: "S", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
-        // gridState.gridLetters[6][6] = { letter: "Z", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
-        // gridState.gridLetters[5][7] = { letter: " ", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
-        // gridState.gridLetters[6][9] = { letter: "S", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
+        // gridState.gridLetters[6][5] = { letter: "S", id: "34", pointVal: "taken3", hot: " " }; //? uncomment for debug - checking with interrupting tiles
 
         nextX = tile[0]; //resetting value
         nextY = tile[1]; //resetting value
@@ -306,8 +241,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
 
             let joined = [...supply[set], letter, boarderLetter].join("");
             if (!checkedOut.includes(joined)) {
-              // console.log(nextX, nextY, mod1, mod2);
-
               let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
               //check if the cells on both side of the new tile make a word together
 
@@ -325,16 +258,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                   },
                   startCoord: [nextX, nextY],
                 });
-                // level._1.potentialWords.push({
-                //   a: [...supply[set], letter],
-                //   b: rivalRack.filter((x, index) => index !== i).map((x) => x.letter),
-                // });
-                // level._1.potentialPoints.push({
-                //   a: [...supply[setTally], points],
-                //   b: rivalRack.filter((x, index) => index !== i).map((x) => x.points),
-                // });
                 if (!isPre ? trie().hasWord([...joined].reverse().join("")) : trie().hasWord(joined)) {
-                  // !isPre ? console.log([...joined].reverse().join(""), "rev") : console.log(joined, "reg");
                   //setting up 'word tangents'
                   level._1.branch2.push({
                     letters: {
@@ -346,10 +270,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                       b: rivalRack.filter((x, index) => index !== i).map((x) => x.points),
                     },
                   });
-                  // level._1.branch2..push(Points:{
-                  //   a: [points + "1"],
-                  //   b: rivalRack.filter((x, index) => index !== i).map((x) => x.points),
-                  // });
                 }
               }
             }
@@ -363,9 +283,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             });
           }
         });
-        //TODO: check which level._1.branch2 array make a word
-        //          !!if there is a word check for branch off in 90-deg (suf+pre)
-        // console.log(level._1.letters, level._1.points);
         let nextXRotated = nextX;
         let nextYRotated = nextY;
         let nextXRotatedInverse = nextX;
@@ -376,26 +293,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           let startingCellInverse;
           let branch2StartingCoords;
           let branch2StartingCoordsInverse;
-          // console.log(prev.letters);
           ++count;
-          // if (count++) {
-
-          // if ((path === "up" || path === "down") && nextYRotated >= 1) {
-          //   --nextYRotated;
-          // }
-          // if ((path === "up" || path === "down") && nextYRotatedInverse <= 13) {
-          //   ++nextYRotatedInverse;
-          // }
-
-          // if ((path === "left" || path === "right") && nextXRotated >= 1) {
-          //   --nextXRotated;
-          // }
-          // if ((path === "left" || path === "right") && nextXRotatedInverse <= 13) {
-          //   ++nextXRotatedInverse;
-          // }
           path === "up" || path === "down" ? --nextYRotated : --nextXRotated;
           path === "up" || path === "down" ? ++nextYRotatedInverse : ++nextXRotatedInverse;
-          // console.log(nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
           if (nextXRotated >= 0 && nextYRotated >= 0 && nextXRotated <= 14 && nextYRotated <= 14) {
             startingCell = gridState.gridLetters[nextXRotated][nextYRotated];
             branch2StartingCoords = [nextXRotated, nextYRotated];
@@ -410,14 +310,11 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             branch2StartingCoordsInverse = [nextXRotatedInverse, nextYRotatedInverse];
           }
           if (branch2StartingCoords === undefined || branch2StartingCoordsInverse === undefined) {
-            // console.log(nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
           }
           let borderCell;
           let borderCellInverse;
           if (path === "up" || path === "down") {
-            // if (path) console.log(nextXRotatedInverse, nextYRotatedInverse, );
             if (nextYRotated > 0 && nextYRotated < 14 && nextXRotated >= 0 && nextXRotated <= 14) {
-              // console.log("bottom", nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
               borderCell = gridState.gridLetters[nextXRotated][nextYRotated - 1];
             }
             if (
@@ -426,13 +323,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextXRotatedInverse >= 0 &&
               nextXRotatedInverse <= 14
             ) {
-              // console.log("bottom", nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
               borderCellInverse = gridState.gridLetters[nextXRotatedInverse][nextYRotatedInverse + 1];
             }
           } else {
-            // if (path) console.log(nextXRotatedInverse, nextYRotatedInverse);
             if (nextXRotated > 0 && nextXRotated < 14 && nextYRotated >= 0 && nextYRotated <= 14) {
-              // console.log("bottom", nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
               borderCell = gridState.gridLetters[nextXRotated - 1][nextYRotated];
             }
             if (
@@ -441,13 +335,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextYRotatedInverse >= 0 &&
               nextYRotatedInverse <= 14
             ) {
-              // console.log("bottom", nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
               borderCellInverse = gridState.gridLetters[nextXRotatedInverse + 1][nextYRotatedInverse];
             }
           }
-          // console.log(borderCellInverse);
           // }
-          // console.log(nextXRotated, nextYRotated, nextXRotatedInverse, nextYRotatedInverse);
           mod1 = path === "up" || path === "down" ? 0 : 1;
           mod2 = mod1 ? 0 : 1;
           cellsB4 = "";
@@ -464,7 +355,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextXRotated - mod2 <= 14 &&
               nextYRotated - mod1 <= 14
             ) {
-              // console.log("-B4", nextXRotated - mod2, nextYRotated - mod1);
               cellsB4 += gridState.gridLetters[nextXRotated - mod2][nextYRotated - mod1].letter;
             }
             if (
@@ -473,7 +363,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextXRotatedInverse - mod2 <= 14 &&
               nextYRotatedInverse - mod1 <= 14
             ) {
-              // console.log("-B4 - I", nextXRotatedInverse - mod2, nextYRotatedInverse - mod1);
               cellsB4Inverse += gridState.gridLetters[nextXRotatedInverse - mod2][nextYRotatedInverse - mod1].letter;
             }
 
@@ -483,7 +372,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextXRotated + mod2 >= 0 &&
               nextYRotated + mod1 >= 0
             ) {
-              // console.log("+After", nextXRotated + mod2, nextYRotated + mod1);
               cellsAfter += gridState.gridLetters[nextXRotated + mod2][nextYRotated + mod1].letter;
             }
             if (
@@ -492,7 +380,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextXRotatedInverse + mod2 >= 0 &&
               nextYRotatedInverse + mod1 >= 0
             ) {
-              // console.log("+After - I", nextXRotatedInverse + mod2, nextYRotatedInverse + mod1);
               cellsAfterInverse += gridState.gridLetters[nextXRotatedInverse + mod2][nextYRotatedInverse + mod1].letter;
             }
           }
@@ -508,11 +395,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let joker3Used = false;
 
             start.letters.b.forEach((letter, i2) => {
-              // console.log(nextXRotated, nextYRotated, [...start.a, letter].join(""));
               let run = () => {
                 let temp1 = { letters: [], points: [], details: [] };
                 let temp2 = { letters: [], points: [], details: [] };
-                if (!letter) return; //!check if start.a has already been used with a blank
+                if (!letter) return;
                 let originalLetter = letter;
                 let points = prev[i].points.b[i2];
                 //!  1.0
@@ -520,7 +406,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                 if (count === 1 || prev[i]?.details?.type === 1 || prev[i]?.details?.type === 3) {
                   if (startingCell !== undefined && startingCell.letter !== " ") {
                     letter = startingCell.letter;
-                    points = +startingCell.pointVal; //?string number value (can help determine which cells are taken)
+                    points = +startingCell.pointVal;
                     taken = true;
                   }
                   let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
@@ -529,22 +415,18 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     let boarderLetter = isBordered ? borderCell.letter : "";
                     let joined = [boarderLetter, letter, ...start.letters.a].join("");
                     if (!checkedOut4Branch.includes(joined)) {
-                      //?^^move to else condition without "!"^^?
                       if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
                         if (startingCell !== undefined) {
                           checkedOut4Branch.push(joined); //?
                           temp1.letters.push({
-                            // cur.letters.push({
                             a: [letter, ...start.letters.a],
                             b: start.letters.b.filter((x, index) => index !== (taken ? 8 : i2)),
                           });
                           temp1.points.push({
-                            // cur.points.push({
                             a: [points, ...prev[i].points.a],
                             b: prev[i].points.b.filter((x, index) => index !== (taken ? 8 : i2)),
                           });
                           temp1.details.push({ coords: branch2StartingCoords, isEnd: false, type: 1 });
-                          // cur.details.push({ coords: [nextXRotated, nextYRotated], isEnd: false, type: 1 });
                         }
                         //!1.1
                         if (
@@ -556,10 +438,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                             let taken = false;
                             letter = temp1.letters[0].b[0];
                             points = temp1.points[0].b[0];
-                            if (!letter) return; //!check if start.a has already been used with a blank
+                            if (!letter) return;
                             if (startingCellInverse !== undefined && startingCellInverse.letter !== " ") {
                               letter = startingCellInverse.letter;
-                              points = +startingCellInverse.pointVal; //?string number value (can help determine which cells are taken)
+                              points = +startingCellInverse.pointVal;
                               taken = true;
                             }
                             cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
@@ -584,7 +466,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                                     isEnd: true,
                                     type: 3,
                                   });
-                                  let test = null;
                                 }
                               }
                             }
@@ -609,7 +490,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                   //!    2.0
                   if (startingCellInverse !== undefined && startingCellInverse.letter !== " ") {
                     letter = startingCellInverse.letter;
-                    points = +startingCellInverse.pointVal; //?string number value (can help determine which cells are taken)
+                    points = +startingCellInverse.pointVal;
                     taken = true;
                   }
                   let cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
@@ -618,7 +499,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     let boarderLetter = isBordered ? borderCellInverse.letter : "";
                     let joined = [...start.letters.a, letter, boarderLetter].join("");
                     if (!checkedOut4Branch.includes(joined)) {
-                      //?^^move to else condition without "!"^^?
                       if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
                         if (startingCellInverse !== undefined) {
                           checkedOut4Branch.push(joined); //?
@@ -636,7 +516,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                             type: 2,
                           });
                         }
-                        let test = null;
                         //!  2.1
                         if (
                           ((temp2.letters[0]?.b?.length && count === 1) ||
@@ -650,7 +529,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                             if (!letter) return; //!check if start.a has already been used with a blank
                             if (startingCell !== undefined && startingCell.letter !== " ") {
                               letter = startingCell.letter;
-                              points = +startingCell.pointVal; //?string number value (can help determine which cells are taken)
+                              points = +startingCell.pointVal;
                               taken = true;
                             }
                             cellsJoined = (cellsB4 + letter + cellsAfter).trim();
@@ -674,7 +553,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                                     isEnd: true,
                                     type: 3,
                                   });
-                                  let test = null;
                                 }
                               }
                             }
@@ -692,7 +570,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     }
                   }
                 }
-                // cur.branch2.unshift({letters: });
                 temp1.letters.forEach((x, i) => {
                   cur.unshift({
                     letters: x,
@@ -711,9 +588,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     length: 7 - x.b.length,
                   });
                 });
-                // cur.letters.unshift(...temp1.letters, ...temp2.letters);
-                // cur.points.unshift(...temp1.points, ...temp2.points);
-                // cur.details.unshift(...temp1.details, ...temp2.details);
               };
               run();
               if (!letter && !jokerUsed) {
@@ -737,26 +611,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           let startingCellInverse = undefined;
           let newBranchStartingCoords = undefined;
           let newBranchStartingCoordsInverse = undefined;
-          // console.log(prev.letters);
           ++count;
-          // if (count++) {
-
-          // if ((path === "up" || path === "down") && nextNewYRotated >= 1) {
-          //   --nextNewYRotated;
-          // }
-          // if ((path === "up" || path === "down") && nextNewYRotatedInverse <= 13) {
-          //   ++nextNewYRotatedInverse;
-          // }
-
-          // if ((path === "left" || path === "right") && nextNewXRotated >= 1) {
-          //   --nextNewXRotated;
-          // }
-          // if ((path === "left" || path === "right") && nextNewXRotatedInverse <= 13) {
-          //   ++nextNewXRotatedInverse;
-          // }
           path === "up" || path === "down" ? --nextNewXRotated : --nextNewYRotated;
           path === "up" || path === "down" ? ++nextNewXRotatedInverse : ++nextNewYRotatedInverse;
-          // console.log(path, nextNewXRotated, nextNewYRotated, nextNewXRotatedInverse, nextNewYRotatedInverse);
           if (nextNewXRotated >= 0 && nextNewYRotated >= 0 && nextNewXRotated <= 14 && nextNewYRotated <= 14) {
             startingCell = gridState.gridLetters[nextNewXRotated][nextNewYRotated];
             newBranchStartingCoords = [nextNewXRotated, nextNewYRotated];
@@ -770,15 +627,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             startingCellInverse = gridState.gridLetters[nextNewXRotatedInverse][nextNewYRotatedInverse];
             newBranchStartingCoordsInverse = [nextNewXRotatedInverse, nextNewYRotatedInverse];
           }
-          // if (newBranchStartingCoords === undefined || newBranchStartingCoordsInverse === undefined) {
-          //   console.log(nextNewXRotated, nextNewYRotated, nextNewXRotatedInverse, nextNewYRotatedInverse);
-          // }
           let borderCell;
           let borderCellInverse;
           if (path === "up" || path === "down") {
-            // if (path) console.log(nextNewXRotatedInverse, nextNewYRotatedInverse);
             if (nextNewXRotated > 0 && nextNewXRotated < 14 && nextNewYRotated >= 0 && nextNewYRotated <= 14) {
-              // console.log("top", nextNewXRotated, nextNewYRotated, nextNewXRotatedInverse, nextNewYRotatedInverse);
               borderCell = gridState.gridLetters[nextNewXRotated - 1][nextNewYRotated];
             }
             if (
@@ -787,13 +639,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextNewYRotatedInverse >= 0 &&
               nextNewYRotatedInverse <= 14
             ) {
-              // console.log("top", nextNewXRotated, nextNewYRotated, nextNewXRotatedInverse, nextNewYRotatedInverse);
               borderCellInverse = gridState.gridLetters[nextNewXRotatedInverse + 1][nextNewYRotatedInverse];
             }
           } else {
-            // if (path) console.log(nextNewXRotatedInverse, nextNewYRotatedInverse);
             if (nextNewYRotated > 0 && nextNewYRotated < 14 && nextNewXRotated >= 0 && nextNewXRotated <= 14) {
-              // console.log("top", nextNewXRotated, nextNewYRotated, nextNewXRotatedInverse, nextNewYRotatedInverse);
               borderCell = gridState.gridLetters[nextNewXRotated][nextNewYRotated - 1];
             }
             if (
@@ -802,13 +651,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextNewXRotatedInverse >= 0 &&
               nextNewXRotatedInverse <= 14
             ) {
-              // console.log("top", nextNewXRotated, nextNewYRotated, nextNewXRotatedInverse, nextNewYRotatedInverse);
               borderCellInverse = gridState.gridLetters[nextNewXRotatedInverse][nextNewYRotatedInverse + 1];
             }
           }
-          // console.log(borderCellInverse);
           // }
-          // console.log(nextNewXRotated, nextNewYRotated, nextNewXRotatedInverse, nextNewYRotatedInverse);
           mod1 = path === "up" || path === "down" ? 1 : 0;
           mod2 = mod1 ? 0 : 1;
 
@@ -826,7 +672,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextNewXRotated - mod2 <= 14 &&
               nextNewYRotated - mod1 <= 14
             ) {
-              // console.log("-B4", nextNewXRotated - mod2, nextNewYRotated - mod1);
               cellsB4 += gridState.gridLetters[nextNewXRotated - mod2][nextNewYRotated - mod1].letter;
             }
             if (
@@ -835,7 +680,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextNewXRotatedInverse - mod2 <= 14 &&
               nextNewYRotatedInverse - mod1 <= 14
             ) {
-              // console.log("-B4 - I", nextNewXRotatedInverse - mod2, nextNewYRotatedInverse - mod1);
               cellsB4Inverse +=
                 gridState.gridLetters[nextNewXRotatedInverse - mod2][nextNewYRotatedInverse - mod1].letter;
             }
@@ -846,7 +690,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextNewXRotated + mod2 >= 0 &&
               nextNewYRotated + mod1 >= 0
             ) {
-              // console.log("+After", nextNewXRotated + mod2, nextNewYRotated + mod1);
               cellsAfter += gridState.gridLetters[nextNewXRotated + mod2][nextNewYRotated + mod1].letter;
             }
             if (
@@ -855,7 +698,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               nextNewXRotatedInverse + mod2 >= 0 &&
               nextNewYRotatedInverse + mod1 >= 0
             ) {
-              // console.log("+After - I", nextNewXRotatedInverse + mod2, nextNewYRotatedInverse + mod1);
               cellsAfterInverse +=
                 gridState.gridLetters[nextNewXRotatedInverse + mod2][nextNewYRotatedInverse + mod1].letter;
             }
@@ -872,7 +714,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let joker3Used = false;
 
             start.letters.b.forEach((letter, i2) => {
-              // console.log(nextNewXRotated, nextNewYRotated, [...start.a, letter].join(""));
               let run = () => {
                 let temp1 = { letters: [], points: [], details: [] };
                 let temp2 = { letters: [], points: [], details: [] };
@@ -898,17 +739,14 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                         if (startingCell !== undefined) {
                           checkedOut4NewBranch.push(joined); //?
                           temp1.letters.push({
-                            // cur.letters.push({
                             a: [letter, ...start.letters.a],
                             b: start.letters.b.filter((x, index) => index !== (taken ? 8 : i2)),
                           });
                           temp1.points.push({
-                            // cur.points.push({
                             a: [points, ...prev[i].points.a],
                             b: prev[i].points.b.filter((x, index) => index !== (taken ? 8 : i2)),
                           });
                           temp1.details.push({ coords: newBranchStartingCoords, isEnd: false, type: 1 });
-                          // cur.details.push({ coords: [nextNewXRotated, nextNewYRotated], isEnd: false, type: 1 });
                         }
                         //!1.1
                         if (
@@ -923,7 +761,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                             if (!letter) return; //!check if start.a has already been used with a blank
                             if (startingCellInverse !== undefined && startingCellInverse.letter !== " ") {
                               letter = startingCellInverse.letter;
-                              points = +startingCellInverse.pointVal; //?string number value (can help determine which cells are taken)
+                              points = +startingCellInverse.pointVal;
                               taken = true;
                             }
                             cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
@@ -948,7 +786,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                                     isEnd: true,
                                     type: 3,
                                   });
-                                  let test = null;
                                 }
                               }
                             }
@@ -973,7 +810,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                   //!    2.0
                   if (startingCellInverse !== undefined && startingCellInverse.letter !== " ") {
                     letter = startingCellInverse.letter;
-                    points = +startingCellInverse.pointVal; //?string number value (can help determine which cells are taken)
+                    points = +startingCellInverse.pointVal;
                     taken = true;
                   }
                   let cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
@@ -1000,7 +837,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                             type: 2,
                           });
                         }
-                        let test = null;
                         //!  2.1
                         if (
                           ((temp2.letters[0]?.b?.length && count === 1) ||
@@ -1014,7 +850,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                             if (!letter) return; //!check if start.a has already been used with a blank
                             if (startingCell !== undefined && startingCell.letter !== " ") {
                               letter = startingCell.letter;
-                              points = +startingCell.pointVal; //?string number value (can help determine which cells are taken)
+                              points = +startingCell.pointVal;
                               taken = true;
                             }
                             cellsJoined = (cellsB4 + letter + cellsAfter).trim();
@@ -1038,7 +874,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                                     isEnd: true,
                                     type: 3,
                                   });
-                                  let test = null;
                                 }
                               }
                             }
@@ -1056,7 +891,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     }
                   }
                 }
-                // cur.branch2.unshift({letters: });
                 temp1.letters.forEach((x, i) => {
                   cur.unshift({
                     letters: x,
@@ -1075,9 +909,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     length: 7 - x.b.length,
                   });
                 });
-                // cur.letters.unshift(...temp1.letters, ...temp2.letters);
-                // cur.points.unshift(...temp1.points, ...temp2.points);
-                // cur.details.unshift(...temp1.details, ...temp2.details);
               };
               run();
               if (!letter && !jokerUsed) {
@@ -1097,7 +928,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         let borderLetterInverse = boarderLetter;
 
         let checkLevel = (prev, cur) => {
-          //TODO: ^^^ Make it check letters in both directions like checkBranchLevel()
           path === "up" ? --nextX : path === "down" ? ++nextX : path === "left" ? --nextY : ++nextY;
 
           cellsB4 = "";
@@ -1129,7 +959,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                 let points = prev[i].points.b[i2];
                 if (nextCellInfo !== undefined && nextCellInfo.letter !== " ") {
                   letter = nextCellInfo.letter;
-                  points = +nextCellInfo.pointVal; //?string number value (can help determine which cells are taken)
+                  points = +nextCellInfo.pointVal;
                   taken = true;
                 } else {
                   let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
@@ -1153,15 +983,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                       },
                       startCoord: [nextX, nextY],
                     });
-                    // cur[i].letters.push({
-                    //   a: [...start[i].letters.a, letter],
-                    //   b: start.b.filter((x, index) => index !== (taken ? 8 : i2)),
-                    // });
-                    // cur.push({
-                    //   a: [...prev[i].points.a, points],
-                    //   b: prev[i].points.b.filter((x, index) => index !== (taken ? 8 : i2)),
-                    // });
-                    let test = null;
                   }
                 }
               };
@@ -1176,11 +997,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             });
           });
         };
-        // gridState.gridLetters[1][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " }; //? checking with interrupting tiles
-        // gridState.gridLetters[2][7] = { letter: "N", id: "34", pointVal: "taken3", hot: " " };
-        // gridState.gridLetters[3][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " };
-        // gridState.gridLetters[4][7] = { letter: "G", id: "34", pointVal: "taken2", hot: " " };
-        // gridState.gridLetters[5][7] = { letter: "A", id: "34", pointVal: "taken1", hot: " " };
+        // gridState.gridLetters[1][7] = { letter: "E", id: "34", pointVal: "taken3", hot: " " }; //? uncomment to debug - checking with interrupting tiles
 
         // if there is a suffix then repeat until there is no suffix || no more tiles to add || can't make longer
         level._0.newBranch.push({
@@ -1204,8 +1021,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         if (rivalRack.length > 1) {
           //? if rack has only 1 tile then it should have already been used
           for (let j = 1; j < rivalRack.length; j++) {
-            // console.log(`_${j}`);
-            // console.log(level);
             if (level[`_${j}`].branch2.length) {
               checkBranchLevel(level[`_${j}`].branch2, level[`_${j + 1}`].branch2);
               potentialBranch2Mid.unshift(...level[`_${j + 1}`].branch2);
@@ -1216,7 +1031,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               potentialNewBranchMid.unshift(...level[`_${j + 1}`].newBranch);
             }
             // prettier-ignore
-            // console.log(`potentials${j + 1}`, level[`_${j + 1}`].branch2); //?rest of the levels one by one
             if (j + 1 <= addLimit[`${path}`]) {
               let x = path === "up" ? tile[0] - (j + 1) : path === "down" ? tile[0] + (j + 1) : tile[0];
               let y = path === "left" ? tile[1] - (j + 1) : path === "right" ? tile[1] + (j + 1) : tile[1];
@@ -1231,28 +1045,18 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                 } else {
                   borderCellInfo = false;
                 }
-              // console.log(x, y, nextCellInfo); //? displays cell info by coord
-// if(level[`_${j}`] === undefined) console.log(level, `_${j}`, j, tile);
               checkLevel(level[`_${j}`].branch, level[`_${j + 1}`].branch);
-              // prettier-ignore
-              // console.log(`potentials${j + 1}`, level[`_${j + 1}`].potentialWords, level[`_${j + 1}`].potentialPoints); //?rest of the levels one by one
 
               potentialBranchMid.unshift(...level[`_${j + 1}`].branch);
-              // potentialBranchMid.unshift(...level[`_${j + 1}`].potentialPoints);
             }
           }
         }
-        // console.log("checkedOut:", checkedOut, level._1.potentialWords, level._1.potentialPoints, rackCopy);//? level one<<<<<<
-        // console.log("W-Mid:", potentialBranchMid, "P-Mid:", potentialBranchMid);
-        // console.log(level._1.branch2); //? tangent branch
-        // check starting from the longest suffix if word -> put words in "main" array with path
-        // if (!potentialBranchMid.length) console.log("no potentialBranchMid", level);
+        // check starting from the longest suffix -> if word -> put words in "main" array with path
 
         let sliceNum = potentialBranchMid.slice().length;
-        // let sliceNum = potentialBranchMid.slice(0, 222).length;
+        // let sliceNum = potentialBranchMid.slice(0, 222).length;//? uncomment for reduced word options (potentially speeding up AI's moves)
 
         for (let i = 0; i < sliceNum; i++) {
-          // cap number of words coming from each cell to 22
           if (potentialBranchMid.length >= sliceNum) {
             let word = potentialBranchMid[i].letters;
             let setWord = isPre ? word.a : word.a.reverse();
@@ -1271,24 +1075,17 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                 score: _.sum(setPoints),
                 path,
                 reverseOrder: isPre ? true : false,
-              }); //?uncomment
+              });
             } else {
               // sliceNum++; //?enable if we go back to the slice method
             }
           }
         }
-        // if (!potentialBranch2Mid.length) {
-        //   console.log("no potentialBranch2Mid");
-        // }
         sliceNum = potentialBranch2Mid.slice().length;
-        // sliceNum = potentialBranch2Mid.slice(0, 222).length;
         for (let i = 0; i < sliceNum; i++) {
           if (potentialBranch2Mid.length >= sliceNum) {
-            // cap number of words coming from each cell to 22
             let word = potentialBranch2Mid[i].letters;
-            // let setWord = isPre ? word.a : word.a.reverse();
             let setWord = word.a;
-            // let setPoints = isPre ? potentialBranchMid[i].a : potentialBranchMid[i].a.reverse();
             let setPoints = potentialBranch2Mid[i].points.a;
 
             if (trie().hasWord(setWord.join("")) || trie().hasWord(setWord.reverse().join(""))) {
@@ -1313,38 +1110,14 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             }
           }
         }
-        // console.log(level._7);
-        // let indexList = [];
-        // console.log(
-        //   potentialdetailssMid.filter((x, i) => {
-        //     if (x.type === 3) indexList.push(i);
-        //     return x.type === 3;
-        //   })
-        // );
-        // console.log(potentiallettersMid.filter((x, index) => indexList.includes(index)));
-        // console.log(potentialBranchMid.filter((x, index) => indexList.includes(index)));
-        // console.log(indexList);
-        // console.log("mainWords", potentialWordsMain);
-        // console.log(
-        //   "*******************",
-        //   potentiallettersMid,
-        //   potentialBranchMid,
-        //   potentialdetailssMid
-        // );
         potentialNewBranchMid = potentialNewBranchMid.filter((x) => rivalRack.length - x.letters.b.length !== 0);
-        // console.log(potentialNewBranchMid);
-        // console.log(potentialNewBranchMid.length);
         sliceNum = potentialNewBranchMid.slice().length;
-        // sliceNum = potentialNewBranchMid.slice(0, 222).length;
+        // sliceNum = potentialNewBranchMid.slice(0, 222).length; //? uncomment for reduced word options (potentially speeding up AI's moves)
         for (let i = 0; i < sliceNum; i++) {
           if (potentialNewBranchMid.length >= sliceNum) {
-            // cap number of words coming from each cell to 22
             let word = potentialNewBranchMid[i].letters;
-            // let setWord = isPre ? word.a : word.a.reverse();
             let setWord = word.a;
-            // let setPoints = isPre ? potentialBranchMid[i].a : potentialBranchMid[i].a.reverse();
             let setPoints = potentialNewBranchMid[i].points.a;
-            // potentialNewBranchMid[i].details.type === 3 ? console.log("type 3", potentialNewBranchMid[i]) : false;
             if (trie().hasWord(setWord.join("")) || trie().hasWord(setWord.reverse().join(""))) {
               potentialWordsMain.push({
                 a_joined: setWord.join(""), //TODO: get rid of prop
@@ -1366,26 +1139,19 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             }
           }
         }
-
-        // if word add letters and points to gridLetters,pointVal,letter => place pointTally + word in arr
       };
-      // console.log(startingCoords, tile.join(""));
       startingCoords[`${tile.join("")}`].branch.forEach((path) => {
         if (path === "up") {
-          // console.log("*******************1");
           extendPath(path, false); //?parameters ==> (path: string, isPrefix: boolean)
         }
 
         if (path === "down") {
-          // console.log("*******************2");
           extendPath(path, true); //TODO: reactivate
         }
         if (path === "left") {
-          // console.log("*******************3");
           extendPath(path, false); //TODO: reactivate
         }
         if (path === "right") {
-          // console.log("*******************4");
           extendPath(path, true); //TODO: reactivate
         }
       });
@@ -1393,34 +1159,21 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       //TODO: >>>>>>>  iterate over main words => place on board => validate() && get Score => rank descending pick best =>render
     });
     if (!potentialWordsMain.length) {
-      console.log("no main words");
     }
     let bingos = potentialWordsMain.filter((x) => x.numHotTiles === 7);
     let notBingos = potentialWordsMain.filter((x) => x.numHotTiles !== 7);
     notBingos = _.orderBy(notBingos, ["score"], ["desc"]);
     bingos = _.orderBy(bingos, ["score"], ["desc"]);
     let candidates = [...bingos, ...notBingos];
-    //>>>>>>>>>TODO: what pc does when it's not the first turn <<<<<<<<<<
     if (!candidates.length) {
-      console.log("no words", rivalRack);
       return false;
     }
-    console.log("candidates:", candidates);
     // let extraCount = 0;
     let wordSlice = candidates.slice();
-    // let wordSlice = candidates.slice(0, 222);
-    // let extraIndex = [];
+    // let wordSlice = candidates.slice(0, 222); //? uncomment for reduced word options (potentially speeding up AI's moves)
 
-    // console.log(wordSlice);
     candidates = [];
     wordSlice.forEach((item, index) => {
-      if (!(item instanceof Object)) {
-        console.log(`candidate${index}:`, item);
-      }
-      // if (wordSlice[x].word.length > 4 && x < 5) {
-      //   wordSlice.push(wordSlice[x]);
-      //   extraCount++;
-      // }
       let badCookie = false;
       let choice = wordSlice[index];
       let cleanGrid = _.cloneDeep(gridState);
@@ -1431,9 +1184,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         choice.points = choice.points.reverse();
       }
       choice.word.forEach((letter, i) => {
-        if (!(typeof letter === "string")) {
-          console.log(`choice.word${i}:`, letter);
-        }
         let x;
         let y;
 
@@ -1474,19 +1224,15 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
           }
         }
         if (start === undefined) {
-          console.log(start);
         }
         if (start[0] + x < 0 || start[1] + y < 0 || start[0] + x > 14 || start[1] + y > 14) {
           badCookie = true;
           return;
         }
         let isHot = true;
-        // console.log(choice);
-        // console.log(choice, start, start[0] + x, start[1] + y, letter, choice.hasOwnProperty("a_branch2"));
         if (cleanGrid.gridLetters[start[0] + x][start[1] + y].hot === false) {
           isHot = false;
         }
-        // console.log(start[0] + x, start[1] + y);
         if (cleanGrid.gridLetters[start[0] + x][start[1] + y].letter === " ") {
           cleanGrid.gridLetters[start[0] + x][start[1] + y].letter = letter;
           cleanGrid.gridLetters[start[0] + x][start[1] + y].pointVal = choice.points[i];
@@ -1495,7 +1241,6 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         }
         gridOrder.push({ x: start[0] + x, y: start[1] + y, taken: !isHot });
       });
-      // console.log(cleanGrid, wordsLogged);
       let { words, pointTally } = validate(cleanGrid, firstTurn, wordsLogged, false);
       if (badCookie || pointTally === 0) return;
       pointTally = choice.numHotTiles === 7 ? pointTally + 50 : pointTally;
@@ -1513,14 +1258,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       });
     });
 
-    // console.log(rivalRack, rack); //TODO: delete log!
-    // console.log(candidates, "ext: " + extraCount, "surplus: " + (candidates.length - (extraCount + 5)));
-
     let bestWord = _.orderBy(candidates, ["pointTally"], ["desc"])[0];
-    console.log("bestWord", bestWord, "candidates-2", candidates, rivalRack);
 
     if (!bestWord) {
-      console.log("no words");
       return false;
     }
 
@@ -1529,10 +1269,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         i++;
       }
       if (i < bestWord.word.length) {
-        // console.log("best word length:", bestWord.word.length);
-        // console.log($(`[data-location="${bestWord.gridOrder[i].x},${bestWord.gridOrder[i].y}"]`).children());
         if (!$(`[data-location="${bestWord.gridOrder[i].x},${bestWord.gridOrder[i].y}"]`).children().length) {
-          // console.count();
           gridState.gridLetters[bestWord.gridOrder[i].x][bestWord.gridOrder[i].y].letter = bestWord.word[i];
           gridState.gridLetters[bestWord.gridOrder[i].x][bestWord.gridOrder[i].y].pointVal = bestWord.points[i];
           gridState.gridLetters[bestWord.gridOrder[i].x][bestWord.gridOrder[i].y].hot = true;
@@ -1548,13 +1285,10 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         }
       }
     }
-    // console.log(bestWord.wordsLogged);
-    // wordsLogged.push(bestWord.reverseOrder ? bestWord.word.reverse().join("") : bestWord.word.join(""));
     return { rivalRack: bestWord.remaining, pointTally: bestWord.pointTally, words: bestWord.wordsLogged };
   }
 
   //   return the var holding -> {rivalRack, pointTally: bestWord.pointTally, newWordsLogged};TODO:
-  // console.log(trie().hasWord("zi"));
 }
 
 export { calcPcMove };
