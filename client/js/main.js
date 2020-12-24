@@ -23,7 +23,7 @@ let isValidMove = false;
 let playersTurn = false;
 let wordsLogged = [];
 
-const debugging = true; //? change to true for the AI to play it self
+const debugging = false; //? change to true for the AI to play it self
 
 let bag = _.shuffle(_.shuffle(letters)); //TODO: change to const
 // bag = _.drop(bag, 80); //TODO: remove after tests
@@ -161,7 +161,7 @@ startGame(); //TODO: remove after done w/ pc move
 // pcPlay(); //TODO: remove after done w/ pc move
 
 function pcSwap() {
-  // ?.sort((a,b) => b > a ? -1 : 1).filter(x => x !== 0) //for sorting by point value and removing blank tiles
+  //? .sort((a,b) => b > a ? -1 : 1).filter(x => x !== 0) //for sorting by point value and removing blank tiles
   let numTilesLeftInBag = bag.slice(0, 7).length;
   let tilesLeftInRivalRack = rivalRack.slice(0, 7);
   let numTilesLeftInRivalRack = rivalRack.slice(0, 7).length;
@@ -188,9 +188,9 @@ function pcPlay() {
   // console.log("pc's turn");
   playersTurn = false;
 
-  if (rivalRack.length < 7 && !bag.length && prompt()) {
-    rivalRack = Array(7).fill({ letter: "Q", points: 10 });
-  }
+  // if (rivalRack.length < 7 && !bag.length && prompt()) {
+  //   rivalRack = Array(7).fill({ letter: "Q", points: 10 });
+  // }
 
   //TODO:
   zoomOut();
@@ -208,7 +208,6 @@ function pcPlay() {
       if (error?.message?.includes("ranch")) {
         return console.error(error);
       }
-      rivalRack = Array(7).fill({ letter: "Q", points: 10 });
 
       console.error(error);
       pcPlay();
@@ -286,7 +285,8 @@ function pass(wasClicked = false) {
   //    allow next turn
   // if (debugging) firstTurn = false;
   setTimeout(() => {
-    $("#board .tile").removeClass("pcPlay"); //TODO: make sure this is the best place for this
+    if (playersTurn) $("#board .tile").removeClass("pcPlay"); //TODO: make sure this is the best place for this
+
     playersTurn || debugging ? pcPlay() : (playersTurn = true);
   }, 250);
 }
