@@ -36,6 +36,11 @@ div#board {
       width: 100% !important;
       height: 100% !important;
     }
+
+    div.pcPlay {
+      -webkit-text-stroke: 0.3px white;
+      color: navy;
+    }
   }
 
   div.tw::before {

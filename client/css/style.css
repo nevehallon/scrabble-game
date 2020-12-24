@@ -37,6 +37,10 @@ div#board div.column div.tile {
   width: 100% !important;
   height: 100% !important;
 }
+div#board div.column div.pcPlay {
+  -webkit-text-stroke: 0.3px white;
+  color: navy;
+}
 div#board div.tw::before {
   content: "TW";
   position: absolute;

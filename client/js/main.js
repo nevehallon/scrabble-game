@@ -169,13 +169,15 @@ function pcPlay() {
     isValidMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
     // console.log(isValidMove);
     isValidMove ? play() : debugging ? false : pass();
-  }, 110); //TODO: implement a way to retry if call fails //experiment with 50ms
+  }, 220); //TODO: implement a way to retry if call fails //experiment with 50ms
+  // $("#board .tile").removeClass("pcPlay"); //TODO: find a better place for this
 }
 
 function endGame() {
   //TODO:
   //?prevent players from continuing
   //?remove hot tiles from board
+  console.log(rivalRack);
   throw "Game Over";
   //in modal display:
   //  both players points
@@ -240,6 +242,7 @@ function pass(wasClicked = false) {
   //    allow next turn
   // if (debugging) firstTurn = false;
   setTimeout(() => {
+    $("#board .tile").removeClass("pcPlay"); //TODO: make sure this is the best place for this
     playersTurn || debugging ? pcPlay() : (playersTurn = true);
   }, 250);
 }
@@ -321,7 +324,7 @@ function play() {
     // console.log("letters used: ", lettersUsed, rivalRack);
     $("#bagBtn").text(100 - lettersUsed);
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
-    $("#board .hot").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]);
+    $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]);
   }
   //set firstTurn & isValidMove to false
   if (firstTurn) firstTurn = false;
