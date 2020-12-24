@@ -36,6 +36,8 @@ function playError() {
 function validate(gridState, firstTurn, wordsLogged, isPlayer) {
   let { gridLetters: board, gridMultipliers: multiplierMatrix } = gridState;
   try {
+    let hasWords = true;
+
     if (isPlayer) {
       !$(".column .hot").length ? isNot() : isHot();
       if (firstTurn && !board[7][7].letter.trim()) {
@@ -135,25 +137,40 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
         playError();
         throw `Word must contain at least two letters`;
       }
-
-      let touching = false;
-      let singleHot = 0;
-      [...hotRows, ...hotColumns].map((line, index) =>
-        line.split(" ").map((bool) => {
-          if (bool === "true" && index < 15) singleHot = 1;
-          if (bool === "true" && index >= 15) singleHot ? singleHot++ : undefined;
-          if (bool.includes("falsetrue") || bool.includes("truefalse")) touching = true;
-          if (_.without(hotLetters, "", "true").length > 1) {
+    }
+    let touching = false;
+    let singleHot = 0;
+    [...hotRows, ...hotColumns].map((line, index) =>
+      line.split(" ").map((bool) => {
+        if (bool === "true" && index < 15) singleHot = 1;
+        if (bool === "true" && index >= 15) singleHot ? singleHot++ : undefined;
+        if (bool.includes("falsetrue") || bool.includes("truefalse")) touching = true;
+        if (_.without(hotLetters, "", "true").length > 1) {
+          if (isPlayer) {
             playError();
             throw "(47) The letters you play must lie on the same row or column, and must be connected to each other";
+          } else {
+            // console.log({
+            //   message: "AI error happened",
+            //   board: { letters: fullMatrix.letterRows, hot: fullMatrix.hotRows },
+            // });
+            hasWords = false;
           }
-          if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
-        })
-      );
+        }
+        if (bool.length > 7) return hotLetters.push(bool.replaceAll("false", ""));
+      })
+    );
 
-      if ((!touching && !firstTurn) || singleHot > 1) {
+    if ((!touching && !firstTurn) || singleHot > 1) {
+      if (isPlayer) {
         playError();
         throw "(48) The letters you play must lie on the same row or column, and must be connected to each other";
+      } else {
+        // console.log({
+        //   message: "AI error happened",
+        //   board: { letters: fullMatrix.letterRows, hot: fullMatrix.hotRows },
+        // });
+        hasWords = false;
       }
     }
 
@@ -266,7 +283,6 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
       }
     }
 
-    let hasWords = true;
     _.without(words, ...wordsLogged).forEach((word) => {
       if (!trie().hasWord(word)) {
         if (isPlayer) {

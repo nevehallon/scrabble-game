@@ -159,17 +159,61 @@ function zoomOut() {
 
 startGame(); //TODO: remove after done w/ pc move
 // pcPlay(); //TODO: remove after done w/ pc move
+
+function pcSwap() {
+  // ?.sort((a,b) => b > a ? -1 : 1).filter(x => x !== 0) //for sorting by point value and removing blank tiles
+  let numTilesLeftInBag = bag.slice(0, 7).length;
+  let tilesLeftInRivalRack = rivalRack.slice(0, 7);
+  let numTilesLeftInRivalRack = rivalRack.slice(0, 7).length;
+
+  let bool = numTilesLeftInBag <= numTilesLeftInRivalRack;
+  let maxNumTilesToSwap = bool ? numTilesLeftInBag : numTilesLeftInRivalRack;
+
+  rivalRack = bool ? rivalRack.slice(0, 7 - maxNumTilesToSwap) : rivalRack.slice(7 - maxNumTilesToSwap);
+
+  for (let i = 0; i < maxNumTilesToSwap; i++) {
+    if (bag.length) {
+      rivalRack.push(_.pullAt(bag, [0])[0]);
+    }
+  }
+
+  bag.push(...tilesLeftInRivalRack.slice(0, maxNumTilesToSwap));
+  bag = _.shuffle(_.shuffle(bag));
+  console.log(rivalRack, bag);
+  passCount = -1;
+  pass(true);
+}
+
 function pcPlay() {
   // console.log("pc's turn");
   playersTurn = false;
+
+  if (rivalRack.length < 7 && !bag.length && prompt()) {
+    rivalRack = Array(7).fill({ letter: "Q", points: 10 });
+  }
+
   //TODO:
   zoomOut();
   rivalRack.sort((a, b) => (b.letter ? 1 : -1)); //make sure that blanks are last tile
   setTimeout(async () => {
-    isValidMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
-    // console.log(isValidMove);
-    isValidMove ? play() : debugging ? false : pass();
-  }, 220); //TODO: implement a way to retry if call fails //experiment with 50ms
+    try {
+      isValidMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
+      // console.log(isValidMove);
+      // prettier-ignore
+      !isValidMove && rivalRack.length && bag.length ? 
+      pcSwap() : isValidMove ? 
+      play() : debugging ? 
+      false : pass(true);
+    } catch (error) {
+      if (error?.message?.includes("ranch")) {
+        return console.error(error);
+      }
+      rivalRack = Array(7).fill({ letter: "Q", points: 10 });
+
+      console.error(error);
+      pcPlay();
+    }
+  }, 50);
   // $("#board .tile").removeClass("pcPlay"); //TODO: find a better place for this
 }
 
@@ -177,7 +221,7 @@ function endGame() {
   //TODO:
   //?prevent players from continuing
   //?remove hot tiles from board
-  console.log(rivalRack);
+  console.log(rivalRack, wordsLogged);
   throw "Game Over";
   //in modal display:
   //  both players points
@@ -229,9 +273,6 @@ function pass(wasClicked = false) {
   //if param = true ->
   //    add to passCount
   if (wasClicked) passCount++;
-  //if passCount = 4 ->
-  //    end game
-  if (passCount === 4) return endGame();
   //if param = false ->
   //    make sure firstTurn is set to false
   //    reset passCount to equal 0
@@ -239,6 +280,9 @@ function pass(wasClicked = false) {
     if (firstTurn) firstTurn = false;
     passCount = 0;
   }
+  //if passCount = 4 ->
+  //    end game
+  if (passCount === 4) return endGame();
   //    allow next turn
   // if (debugging) firstTurn = false;
   setTimeout(() => {

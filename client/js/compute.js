@@ -1021,34 +1021,38 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         if (rivalRack.length > 1) {
           //? if rack has only 1 tile then it should have already been used
           for (let j = 1; j < rivalRack.length; j++) {
-            if (level[`_${j}`].branch2.length) {
+            // if (level !== undefined && level[`_${j}`] !== undefined && level[`_${j + 1}`] !== undefined) {
+            if (level[`_${j}`].branch2.length && j + 1 <= 7) {
               checkBranchLevel(level[`_${j}`].branch2, level[`_${j + 1}`].branch2);
               potentialBranch2Mid.unshift(...level[`_${j + 1}`].branch2);
             }
 
-            if (level[`_${j}`].newBranch.length) {
+            if (level[`_${j}`].newBranch.length && j + 1 <= 7) {
               checkNewBranchLevel(level[`_${j}`].newBranch, level[`_${j + 1}`].newBranch);
               potentialNewBranchMid.unshift(...level[`_${j + 1}`].newBranch);
             }
-            // prettier-ignore
-            if (j + 1 <= addLimit[`${path}`]) {
+            if (j + 1 <= addLimit[`${path}`] && level[`_${j}`].branch.length && j + 1 <= 7) {
+              // prettier-ignore
               let x = path === "up" ? tile[0] - (j + 1) : path === "down" ? tile[0] + (j + 1) : tile[0];
               let y = path === "left" ? tile[1] - (j + 1) : path === "right" ? tile[1] + (j + 1) : tile[1];
-              
-              nextCellInfo = gridState.gridLetters[x][y];
-              if(x < 13 && x > 1 &&
-                y < 13 && y > 1) {
-                  if (x < 13 && x > 1) x = path === "up" ? tile[0] - (j + 2) : path === "down" ? tile[0] + (j + 2) : tile[0];
-                  if (y < 13 && y > 1) y = path === "left" ? tile[1] - (j + 2) : path === "right" ? tile[1] + (j + 2) : tile[1];
-                  borderCellInfo = gridState.gridLetters[x][y];
 
-                } else {
-                  borderCellInfo = false;
-                }
+              nextCellInfo = gridState.gridLetters[x][y];
+              if (x < 13 && x > 1 && y < 13 && y > 1) {
+                if (x < 13 && x > 1)
+                  x = path === "up" ? tile[0] - (j + 2) : path === "down" ? tile[0] + (j + 2) : tile[0];
+                if (y < 13 && y > 1)
+                  y = path === "left" ? tile[1] - (j + 2) : path === "right" ? tile[1] + (j + 2) : tile[1];
+                borderCellInfo = gridState.gridLetters[x][y];
+              } else {
+                borderCellInfo = false;
+              }
               checkLevel(level[`_${j}`].branch, level[`_${j + 1}`].branch);
 
               potentialBranchMid.unshift(...level[`_${j + 1}`].branch);
             }
+            // } else {
+            // throw { level, _j: level[`_${j}`], _j1: level[`_${j + 1}`] };
+            // }
           }
         }
         // check starting from the longest suffix -> if word -> put words in "main" array with path
@@ -1146,17 +1150,17 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         }
 
         if (path === "down") {
-          extendPath(path, true); //TODO: reactivate
+          extendPath(path, true);
         }
         if (path === "left") {
-          extendPath(path, false); //TODO: reactivate
+          extendPath(path, false);
         }
         if (path === "right") {
-          extendPath(path, true); //TODO: reactivate
+          extendPath(path, true);
         }
       });
 
-      //TODO: >>>>>>>  iterate over main words => place on board => validate() && get Score => rank descending pick best =>render
+      //? iterate over main words => place on board => validate() && get Score => rank descending pick best =>render
     });
     if (!potentialWordsMain.length) {
     }
