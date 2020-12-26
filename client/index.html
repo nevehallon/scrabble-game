@@ -22,6 +22,9 @@
   <!-- touch-punch -->
   <script src="./node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
 
+  <!-- svgbox -->
+  <script type="text/javascript" src="https://unpkg.com/external-svg-loader@latest/svg-loader.min.js" async></script>
+
   <!-- css -->
   <link rel="stylesheet" href="css/style.css" />
   <script defer src="js/main.js" type="module"></script>
@@ -287,6 +290,31 @@
 
     <br />
   </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabel">...</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button id="actionButton" type="button" class="btn btn-primary"></button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>

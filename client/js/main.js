@@ -2,6 +2,7 @@ localforage.config({
   driver: [localforage.INDEXEDDB, localforage.WEBSQL],
   name: "Scrabble_Game",
 });
+import toggleModal from "./modal.js";
 import letters from "./scrabbleLetters.js";
 import { getWordTrieStr } from "./getRequests.js";
 import { calcPcMove } from "./compute.js";
@@ -9,6 +10,7 @@ import { gridState, updateGameState } from "./createGrid.js";
 import validate from "./boardValidator.js";
 // import trie from "../src/trie-prefix-tree/index.js";
 // ?  temp1.forEach((x,i) => console.log(trie().hasWord(x), i))
+window.toggleModal = toggleModal;
 // console.log(trie);
 
 let playerScore = 0;
@@ -26,7 +28,7 @@ let wordsLogged = [];
 const debugging = false; //? change to true for the AI to play it self
 
 let bag = _.shuffle(_.shuffle(letters)); //TODO: change to const
-// bag = _.drop(bag, 80); //TODO: remove after tests
+// bag = _.drop(bag, 80); //? uncomment for doing tests on a shorter game
 let rivalRack = [];
 
 updateGameState();
@@ -59,8 +61,17 @@ function whoStarts() {
 }
 
 function alertStarter(winner) {
-  //TODO: alert user who plays first
-  // console.log(winner);
+  //? alert user who plays first
+  toggleModal({
+    modal: { class: "bd-example-modal-sm", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    title: { class: "", content: winner },
+    body: { class: "d-none", content: "" },
+    footer: { class: "d-none", content: "" },
+    actionButton: { class: "", content: "" },
+    timeout: 2250,
+    executeClose: false,
+  });
 }
 
 function startGame() {
@@ -77,7 +88,7 @@ function startGame() {
     deal2Player();
     deal2PC();
     playersTurn = true;
-    alertStarter("you");
+    alertStarter("You won the draw and will start");
     if (debugging) {
       playersTurn = true;
       pcPlay();
@@ -86,8 +97,10 @@ function startGame() {
     playersTurn = false;
     deal2PC();
     deal2Player();
-    alertStarter("computer");
-    pcPlay();
+    alertStarter("Opponent won the draw and will start");
+    setTimeout(() => {
+      pcPlay();
+    }, 3000);
   }
 }
 
@@ -182,9 +195,36 @@ function pcSwap() {
   console.log(rivalRack, bag);
   passCount = -1;
   pass(true);
+
+  toggleModal({
+    executeClose: true,
+  });
+  toggleModal({
+    modal: { class: "bd-example-modal-sm", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    title: { class: "", content: "Opponent chose to swap tiles" },
+    body: { class: "d-none", content: "" },
+    footer: { class: "d-none", content: "" },
+    actionButton: { class: "", content: "" },
+    timeout: 2250,
+    executeClose: false,
+  });
 }
 
 function pcPlay() {
+  toggleModal({
+    modal: { class: "bd-example-modal-sm", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    title: { class: "", content: "Opponent is thinking..." },
+    body: {
+      class: "text-center",
+      content: `<svg class="spinner" data-src="https://s.svgbox.net/loaders.svg?ic=circles" width="65" height="65" fill="currentColor"></svg>`,
+    },
+    footer: { class: "d-none", content: "" },
+    actionButton: { class: "", content: "" },
+    timeout: 0,
+    executeClose: false,
+  });
   // console.log("pc's turn");
   playersTurn = false;
 
@@ -345,6 +385,8 @@ function play() {
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
     $("#board .hot").draggable("destroy").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]);
   } else {
+    let wordUsed = isValidMove.words;
+
     rivalRack = isValidMove.rivalRack;
     let refill = $("#board .hot").length;
     let tilesPlayed = $("#board .hot").parent().toArray();
@@ -369,6 +411,23 @@ function play() {
     $("#bagBtn").text(100 - lettersUsed);
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
     $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]);
+
+    toggleModal({
+      executeClose: true,
+    });
+
+    setTimeout(() => {
+      toggleModal({
+        modal: { class: "bd-example-modal-sm", content: "" },
+        modalPlacer: { class: "", content: "" },
+        title: { class: "text-primary", content: `Opponent played the word: ${wordUsed}` },
+        body: { class: "d-none", content: "" },
+        footer: { class: "d-none", content: "" },
+        actionButton: { class: "", content: "" },
+        timeout: 2200,
+        executeClose: false,
+      });
+    }, 500);
   }
   //set firstTurn & isValidMove to false
   if (firstTurn) firstTurn = false;
