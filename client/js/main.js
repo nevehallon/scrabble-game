@@ -2,6 +2,8 @@ localforage.config({
   driver: [localforage.INDEXEDDB, localforage.WEBSQL],
   name: "Scrabble_Game",
 });
+
+import { generateTable } from "./playHIstory.js";
 import toggleModal from "./modal.js";
 import letters from "./scrabbleLetters.js";
 import { getWordTrieStr } from "./getRequests.js";
@@ -24,6 +26,7 @@ let firstTurn = true;
 let isValidMove = false;
 let playersTurn = false;
 let wordsLogged = [];
+let history = [];
 
 const debugging = false; //? change to true for the AI to play it self
 
@@ -209,6 +212,13 @@ function pcSwap() {
     timeout: 2250,
     executeClose: false,
   });
+  history.push({
+    isAI: true,
+    points: isValidMove?.pointTally,
+    score: { computerScore, playerScore },
+    skip: { isSwap: true },
+  });
+  generateTable(history);
 }
 
 function pcPlay() {
@@ -218,7 +228,7 @@ function pcPlay() {
     title: { class: "", content: "Opponent is thinking..." },
     body: {
       class: "text-center",
-      content: `<svg class="spinner" data-src="https://s.svgbox.net/loaders.svg?ic=circles" width="65" height="65" fill="currentColor"></svg>`,
+      content: `<img class="spinner" src="https://s.svgbox.net/loaders.svg?ic=circles&fill=blue" width="65" height="65">`,
     },
     footer: { class: "d-none", content: "" },
     actionButton: { class: "", content: "" },
@@ -279,6 +289,13 @@ function swap() {
   //    remove chosen letters
   //    pick new letters in exchange and place them on player's rack
   //    take chosen letters and insert in to bag
+  history.push({
+    isAI: false,
+    points: isValidMove?.pointTally,
+    score: { computerScore, playerScore },
+    skip: { isSwap: true },
+  });
+  generateTable(history);
 }
 
 function mix() {
@@ -311,7 +328,26 @@ function pass(wasClicked = false) {
   // console.log("turn passed");
   //if param = true ->
   //    add to passCount
-  if (wasClicked) passCount++;
+  if (wasClicked) {
+    if (playersTurn) {
+      history.push({
+        isAI: false,
+        points: isValidMove?.pointTally,
+        score: { computerScore, playerScore },
+        skip: { isSwap: false },
+      });
+      generateTable(history);
+    } else if (passCount !== -1) {
+      history.push({
+        isAI: true,
+        points: isValidMove?.pointTally,
+        score: { computerScore, playerScore },
+        skip: { isSwap: false },
+      });
+      generateTable(history);
+    }
+    passCount++;
+  }
   //if param = false ->
   //    make sure firstTurn is set to false
   //    reset passCount to equal 0
@@ -340,7 +376,14 @@ function play() {
   if (isValidMove.hasOwnProperty("rivalRack")) {
     computerScore += isValidMove.pointTally;
     $("#pcScore").text(computerScore);
-    // console.log("computerScore: ", computerScore);
+    history.push({
+      isAI: true,
+      word: isValidMove.bestWord,
+      points: isValidMove.pointTally,
+      score: { computerScore, playerScore },
+      skip: false,
+    });
+    generateTable(history);
     // add and display pc's score
   } else {
     playersTurn = true;
@@ -348,7 +391,14 @@ function play() {
   if (playersTurn) {
     playerScore += isValidMove.pointTally;
     $("#playerScore").text(playerScore);
-    // console.log("playerScore: ", playerScore);
+    history.push({
+      isAI: false,
+      word: isValidMove.bestWord,
+      points: isValidMove.pointTally,
+      score: { computerScore, playerScore },
+      skip: false,
+    });
+    generateTable(history);
     //calculate and add points to "player"
   }
 
@@ -385,7 +435,7 @@ function play() {
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
     $("#board .hot").draggable("destroy").removeClass("hot").parent().removeClass(["dw", "tw", "dl", "tl"]);
   } else {
-    let wordUsed = isValidMove.words;
+    let wordUsed = isValidMove.bestWord;
 
     rivalRack = isValidMove.rivalRack;
     let refill = $("#board .hot").length;
@@ -412,22 +462,21 @@ function play() {
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
     $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]);
 
-    toggleModal({
-      executeClose: true,
-    });
-
     setTimeout(() => {
+      toggleModal({
+        executeClose: true,
+      });
       toggleModal({
         modal: { class: "bd-example-modal-sm", content: "" },
         modalPlacer: { class: "", content: "" },
-        title: { class: "text-primary", content: `Opponent played the word: ${wordUsed}` },
+        title: { class: "text-primary", content: `Opponent played: <b>"${wordUsed}"</b>` },
         body: { class: "d-none", content: "" },
         footer: { class: "d-none", content: "" },
         actionButton: { class: "", content: "" },
         timeout: 2200,
         executeClose: false,
       });
-    }, 500);
+    }, 650);
   }
   //set firstTurn & isValidMove to false
   if (firstTurn) firstTurn = false;
@@ -443,6 +492,20 @@ function showBagContent() {
 }
 function showScoreHistory() {
   //TODO: make into modal
+  toggleModal({
+    executeClose: true,
+  });
+  toggleModal({
+    modal: { class: "text-center", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    modalHeader: { class: "d-none", content: "" },
+    title: { class: "", content: `` },
+    body: { class: "", content: generateTable(history) },
+    footer: { class: "justify-content-center", content: "" },
+    actionButton: { class: "d-none", content: "" },
+    timeout: 0,
+    executeClose: false,
+  });
   //show list of moves. who played what and how many points were earned
 }
 

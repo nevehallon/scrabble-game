@@ -318,7 +318,7 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
     }
 
     if (hasWords) {
-      return { words, pointTally }; //return wordsToBeLogged, totalPotentialPoints
+      return { words, pointTally, bestWord: _.without(words, ...wordsLogged) }; //return wordsToBeLogged, totalPotentialPoints
     } else {
       return { words, pointTally: 0 };
     }

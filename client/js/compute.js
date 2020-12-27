@@ -96,7 +96,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       }
     });
     wordsLogged.push(bestWord.word);
-    return { rivalRack: rivalRack, pointTally: bestWord.pointTally, words: wordsLogged };
+    return { rivalRack: rivalRack, pointTally: bestWord.pointTally, words: wordsLogged, bestWord: bestWord.word };
   } else {
     let startingCoords = {}; //? the cells on the board where we can build off from
     let tilesPlayedCoords = [];
@@ -1289,7 +1289,12 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         }
       }
     }
-    return { rivalRack: bestWord.remaining, pointTally: bestWord.pointTally, words: bestWord.wordsLogged };
+    return {
+      rivalRack: bestWord.remaining,
+      pointTally: bestWord.pointTally,
+      words: bestWord.wordsLogged,
+      bestWord: bestWord.reverseOrder ? bestWord.word.reverse().join("") : bestWord.word.join(""),
+    };
   }
 
   //   return the var holding -> {rivalRack, pointTally: bestWord.pointTally, newWordsLogged};TODO:

@@ -1,13 +1,17 @@
+let timeout = setTimeout(() => {}, 0);
+
 let $modal = $("#modal");
 let $modalPlacer = $(".modal-dialog");
+let $modalHeader = $(".modal-header");
 let $title = $(".modal-title");
 let $body = $(".modal-body");
 let $footer = $(".modal-footer");
-let $actionButton = $(".modal-actionButton");
+let $actionButton = $("#actionButton");
 
 const defaults = {
   modal: { class: "", content: "" },
   modalPlacer: { class: "", content: "" },
+  modalHeader: { class: "", content: "" },
   title: { class: "", content: "" },
   body: { class: "", content: "" },
   footer: { class: "", content: "" },
@@ -34,36 +38,30 @@ function resetModal(options) {
 
     $modal.attr("class", `modal ${options?.modal?.class}`);
     $modalPlacer.attr("class", `modal-dialog ${options?.modalPlacer?.class}`);
+    $modalHeader.attr("class", `modal-header ${options?.modalHeader?.class}`);
     $title.attr("class", `modal-title ${options?.title?.class}`);
     $body.attr("class", `modal-body ${options?.body?.class}`);
     $footer.attr("class", `modal-footer ${options?.footer?.class}`);
+    $actionButton.attr("class", `btn btn-primary ${options?.actionButton?.class}`);
   } else {
     $modal.attr("class", "modal");
     $modalPlacer.attr("class", "modal-dialog");
     $body.attr("class", "modal-body");
     $footer.attr("class", "modal-footer");
+    $actionButton.attr("class", "btn btn-primary");
   }
 
   contentWasSet = true;
 }
 
-export default function toggleModal(options = defaults) {
-  contentWasSet = false;
-
-  if (options.executeClose) {
-    contentWasSet = true;
-    setTimeout(() => {
-      resetModal(options);
-      $("#modal").modal("hide");
-    }, 500);
-    return;
-  }
+function displayModal(options) {
   resetModal(options);
 
   $("#modal").modal("show");
 
   if (options.timeout) {
-    setTimeout(() => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
       //
       $("#modal").modal("hide");
 
@@ -74,6 +72,21 @@ export default function toggleModal(options = defaults) {
       //
     }, options.timeout);
   }
+  return;
+}
+
+export default function toggleModal(options = defaults) {
+  contentWasSet = false;
+  clearTimeout(timeout);
+
+  if (options.executeClose) {
+    contentWasSet = true;
+    resetModal({ ...defaults, ...options });
+    $("#modal").modal("hide");
+    return;
+  }
+
+  return displayModal({ ...defaults, ...options });
 }
 
 // <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
