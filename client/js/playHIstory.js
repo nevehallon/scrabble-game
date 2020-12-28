@@ -1,5 +1,4 @@
 function generateTable(history) {
-  console.log(history);
   let modalContent = `
 <h5 class="mb-5">Play History</h5>
 <table class="table table-hover">
@@ -31,7 +30,7 @@ function generateTable(history) {
                     </tr>`;
   });
 
-  history += `</tbody></table>`;
+  modalContent += `</tbody></table>`;
 
   return modalContent;
 }

@@ -4,6 +4,7 @@ localforage.config({
 });
 
 import { generateTable } from "./playHIstory.js";
+import { generateRemainder } from "./remainingLetters.js";
 import toggleModal from "./modal.js";
 import letters from "./scrabbleLetters.js";
 import { getWordTrieStr } from "./getRequests.js";
@@ -175,7 +176,7 @@ function zoomOut() {
 
 startGame(); //TODO: remove after done w/ pc move
 // pcPlay(); //TODO: remove after done w/ pc move
-
+generateRemainder(bag);
 function pcSwap() {
   //? .sort((a,b) => b > a ? -1 : 1).filter(x => x !== 0) //for sorting by point value and removing blank tiles
   let numTilesLeftInBag = bag.slice(0, 7).length;
@@ -228,7 +229,7 @@ function pcPlay() {
     title: { class: "", content: "Opponent is thinking..." },
     body: {
       class: "text-center",
-      content: `<div class="spinner-container my-2"><svg class="spinner" data-src="../images/spinner.svg"  fill="currentColor"></svg></div>`,
+      content: `<div class="spinner-container my-2"><svg class="spinner" data-src="https://s.svgbox.net/loaders.svg?ic=circles" fill="currentColor"></svg></div>`,
     },
     footer: { class: "d-none", content: "" },
     actionButton: { class: "", content: "" },
@@ -241,7 +242,7 @@ function pcPlay() {
   // if (rivalRack.length < 7 && !bag.length && prompt()) {
   //   rivalRack = Array(7).fill({ letter: "Q", points: 10 });
   // }
-  rivalRack = [...rivalRack.slice(0, 6), { letter: "", points: 0 }];
+  // rivalRack = [...rivalRack.slice(0, 6), { letter: "", points: 0 }]; //? uncomment for testing
 
   //TODO:
   zoomOut();
@@ -489,6 +490,20 @@ function play() {
 
 function showBagContent() {
   //TODO: make into modal
+  toggleModal({
+    executeClose: true,
+  });
+  toggleModal({
+    modal: { class: "text-center", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    modalHeader: { class: "d-none", content: "" },
+    title: { class: "", content: `` },
+    body: { class: "mh-100", content: generateRemainder(bag) },
+    footer: { class: "justify-content-center", content: "" },
+    actionButton: { class: "d-none", content: "" },
+    timeout: 0,
+    executeClose: false,
+  });
   // list letters + blank and how many remain of each tile
 }
 function showScoreHistory() {

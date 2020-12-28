@@ -179,7 +179,7 @@ svg.spinner {
   // background: radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 76%);
   color: blue;
   transform: translateZ(0);
-  animation: spin 3s infinite linear reverse;
+  animation: spin 3s infinite linear alternate-reverse;
 }
 @keyframes spin {
   0% {
@@ -199,10 +199,32 @@ div.modal-body {
 }
 
 div.modal-body::-webkit-scrollbar {
-  width: 2px; /* Remove scrollbar space */
+  width: 0; /* Remove scrollbar space */
+  height: 0; /* Remove scrollbar space */
   background: transparent; /* Optional: just make scrollbar invisible */
 }
 /* Optional: show position indicator in red */
 div.modal-body::-webkit-scrollbar-thumb {
   background: #000000;
+}
+
+div.tilesLeft {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+  width: 70%;
+  margin: auto;
+  row-gap: 2px;
+
+  div.status-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    font-size: small;
+    font-weight: bold;
+
+    div.tile {
+      zoom: 0.7;
+    }
+  }
 }
