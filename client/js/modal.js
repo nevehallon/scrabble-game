@@ -2,6 +2,7 @@ let timeout = setTimeout(() => {}, 0);
 
 let $modal = $("#modal");
 let $modalPlacer = $(".modal-dialog");
+let $modalContent = $(".modal-content");
 let $modalHeader = $(".modal-header");
 let $title = $(".modal-title");
 let $body = $(".modal-body");
@@ -11,6 +12,7 @@ let $actionButton = $("#actionButton");
 const defaults = {
   modal: { class: "", content: "" },
   modalPlacer: { class: "", content: "" },
+  modalContent: { class: "", content: "" },
   modalHeader: { class: "", content: "" },
   title: { class: "", content: "" },
   body: { class: "", content: "" },
@@ -38,6 +40,7 @@ function resetModal(options) {
 
     $modal.attr("class", `modal ${options?.modal?.class}`);
     $modalPlacer.attr("class", `modal-dialog ${options?.modalPlacer?.class}`);
+    $modalContent.attr("class", `modal-content ${options?.modalContent?.class}`);
     $modalHeader.attr("class", `modal-header ${options?.modalHeader?.class}`);
     $title.attr("class", `modal-title ${options?.title?.class}`);
     $body.attr("class", `modal-body ${options?.body?.class}`);
@@ -46,6 +49,7 @@ function resetModal(options) {
   } else {
     $modal.attr("class", "modal");
     $modalPlacer.attr("class", "modal-dialog");
+    $modalContent.attr("class", "modal-content");
     $body.attr("class", "modal-body");
     $footer.attr("class", "modal-footer");
     $actionButton.attr("class", "btn btn-primary");

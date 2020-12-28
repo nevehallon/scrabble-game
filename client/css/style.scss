@@ -162,8 +162,14 @@ button#scoresBtn {
     line-height: 1;
   }
 }
-
-img.spinner {
+div.spinner-container {
+  box-shadow: inset 0 0 8px 2px black;
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  margin: auto;
+}
+svg.spinner {
   box-shadow: inset 0 0 8px 2px black;
   padding: 15px;
   width: 65px;
@@ -172,35 +178,31 @@ img.spinner {
   // background: rgb(0, 0, 0);
   // background: radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 76%);
   color: blue;
-  animation: spin 2250ms infinite linear;
+  transform: translateZ(0);
+  animation: spin 3s infinite linear reverse;
 }
 @keyframes spin {
   0% {
-    // color: blue;
-    padding: 15px;
-  }
-  33% {
-    // color: red;
+    transform: scale(1);
   }
   50% {
-    padding: 7px;
-  }
-  66% {
-    // color: green;
+    transform: scale(1.35) rotate(360deg);
   }
   100% {
-    // color: blue;
-    padding: 15px;
-  }
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
+    transform: scale(1) rotate(0deg);
   }
 }
 
 div.modal-body {
-  overflow: auto;
+  overflow: scroll;
   max-height: 60vh;
+}
+
+div.modal-body::-webkit-scrollbar {
+  width: 2px; /* Remove scrollbar space */
+  background: transparent; /* Optional: just make scrollbar invisible */
+}
+/* Optional: show position indicator in red */
+div.modal-body::-webkit-scrollbar-thumb {
+  background: #000000;
 }

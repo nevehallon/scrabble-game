@@ -66,7 +66,7 @@ function whoStarts() {
 function alertStarter(winner) {
   //? alert user who plays first
   toggleModal({
-    modal: { class: "bd-example-modal-sm", content: "" },
+    modal: { class: "", content: "" },
     modalPlacer: { class: "modal-dialog-centered", content: "" },
     title: { class: "", content: winner },
     body: { class: "d-none", content: "" },
@@ -203,7 +203,7 @@ function pcSwap() {
     executeClose: true,
   });
   toggleModal({
-    modal: { class: "bd-example-modal-sm", content: "" },
+    modal: { class: "", content: "" },
     modalPlacer: { class: "modal-dialog-centered", content: "" },
     title: { class: "", content: "Opponent chose to swap tiles" },
     body: { class: "d-none", content: "" },
@@ -223,12 +223,12 @@ function pcSwap() {
 
 function pcPlay() {
   toggleModal({
-    modal: { class: "bd-example-modal-sm", content: "" },
+    modal: { class: "", content: "" },
     modalPlacer: { class: "modal-dialog-centered", content: "" },
     title: { class: "", content: "Opponent is thinking..." },
     body: {
       class: "text-center",
-      content: `<img class="spinner" src="https://s.svgbox.net/loaders.svg?ic=circles&fill=blue" width="65" height="65">`,
+      content: `<div class="spinner-container my-2"><svg class="spinner" data-src="../images/spinner.svg"  fill="currentColor"></svg></div>`,
     },
     footer: { class: "d-none", content: "" },
     actionButton: { class: "", content: "" },
@@ -241,6 +241,7 @@ function pcPlay() {
   // if (rivalRack.length < 7 && !bag.length && prompt()) {
   //   rivalRack = Array(7).fill({ letter: "Q", points: 10 });
   // }
+  rivalRack = [...rivalRack.slice(0, 6), { letter: "", points: 0 }];
 
   //TODO:
   zoomOut();
@@ -463,11 +464,11 @@ function play() {
     $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]);
 
     setTimeout(() => {
+      // toggleModal({
+      //   executeClose: true,
+      // });
       toggleModal({
-        executeClose: true,
-      });
-      toggleModal({
-        modal: { class: "bd-example-modal-sm", content: "" },
+        modal: { class: "", content: "" },
         modalPlacer: { class: "", content: "" },
         title: { class: "text-primary", content: `Opponent played: <b>"${wordUsed}"</b>` },
         body: { class: "d-none", content: "" },
@@ -476,7 +477,7 @@ function play() {
         timeout: 2200,
         executeClose: false,
       });
-    }, 650);
+    }, 1650);
   }
   //set firstTurn & isValidMove to false
   if (firstTurn) firstTurn = false;
@@ -505,6 +506,9 @@ function showScoreHistory() {
     actionButton: { class: "d-none", content: "" },
     timeout: 0,
     executeClose: false,
+  });
+  $(".modal-body").scrollTop(function () {
+    return this.scrollHeight;
   });
   //show list of moves. who played what and how many points were earned
 }

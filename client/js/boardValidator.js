@@ -38,8 +38,8 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
   try {
     let hasWords = true;
 
+    !$(".column .hot").length ? isNot() : isHot();
     if (isPlayer) {
-      !$(".column .hot").length ? isNot() : isHot();
       if (firstTurn && !board[7][7].letter.trim()) {
         playError();
         throw "Error: Your word must touch an existing word or the center star";
