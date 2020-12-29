@@ -3,6 +3,7 @@ localforage.config({
   name: "Scrabble_Game",
 });
 
+import { generateRack, doSwap } from "./letterSwap.js";
 import { generateTable } from "./playHIstory.js";
 import { generateRemainder } from "./remainingLetters.js";
 import toggleModal from "./modal.js";
@@ -28,11 +29,12 @@ let isValidMove = false;
 let playersTurn = false;
 let wordsLogged = [];
 let history = [];
+let swappedTileId = 4321;
 
 const debugging = false; //? change to true for the AI to play it self
 
 let bag = _.shuffle(_.shuffle(letters)); //TODO: change to const
-// bag = _.drop(bag, 80); //? uncomment for doing tests on a shorter game
+bag = _.drop(bag, 80); //? uncomment for doing tests on a shorter game
 let rivalRack = [];
 
 updateGameState();
@@ -198,7 +200,7 @@ function pcSwap() {
   bag = _.shuffle(_.shuffle(bag));
   console.log(rivalRack, bag);
   passCount = -1;
-  pass(true);
+  pass(true, true, true);
 
   toggleModal({
     executeClose: true,
@@ -213,13 +215,6 @@ function pcSwap() {
     timeout: 2250,
     executeClose: false,
   });
-  history.push({
-    isAI: true,
-    points: isValidMove?.pointTally,
-    score: { computerScore, playerScore },
-    skip: { isSwap: true },
-  });
-  generateTable(history);
 }
 
 function pcPlay() {
@@ -242,7 +237,7 @@ function pcPlay() {
   // if (rivalRack.length < 7 && !bag.length && prompt()) {
   //   rivalRack = Array(7).fill({ letter: "Q", points: 10 });
   // }
-  // rivalRack = [...rivalRack.slice(0, 6), { letter: "", points: 0 }]; //? uncomment for testing
+  // rivalRack = Array(7).fill({ letter: "Q", points: 10 }); //[...rivalRack.slice(0, 6), { letter: "", points: 0 }]; //? uncomment for testing
 
   //TODO:
   zoomOut();
@@ -255,7 +250,7 @@ function pcPlay() {
       !isValidMove && rivalRack.length && bag.length ? 
       pcSwap() : isValidMove ? 
       play() : debugging ? 
-      false : pass(true);
+      false : pass(true, false, true);
     } catch (error) {
       if (error?.message?.includes("ranch")) {
         return console.error(error);
@@ -270,10 +265,58 @@ function pcPlay() {
 
 function endGame() {
   //TODO:
-  //?prevent players from continuing
-  //?remove hot tiles from board
-  console.log(rivalRack, wordsLogged);
-  throw "Game Over";
+  zoomOut();
+  $("#utilBar .btn").not("#scoresBtn").css({ "pointer-events": "none" }); //?prevent players from continuing
+
+  $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]); //?remove hot tiles from board
+
+  if (!rivalRack.length) {
+    let sum = $("#rack .tile")
+      .children("div")
+      .toArray()
+      .reduce((acc, cur) => acc + +cur.innerHTML, 0);
+
+    playerScore -= sum;
+    computerScore += sum;
+
+    playerScore = playerScore < 0 ? 0 : playerScore;
+    computerScore = computerScore < 0 ? 0 : computerScore;
+    $("#playerScore").text(playerScore);
+    $("#pcScore").text(computerScore);
+    //? deduct points from player and give them to AI
+  }
+
+  if (!$("#rack .tile").length) {
+    let sum = rivalRack.reduce((acc, cur) => acc + cur, 0);
+
+    playerScore += sum;
+    computerScore -= sum;
+
+    playerScore = playerScore < 0 ? 0 : playerScore;
+    computerScore = computerScore < 0 ? 0 : computerScore;
+
+    $("#playerScore").text(playerScore);
+    $("#pcScore").text(computerScore);
+    //? deduct points from AI and give them to player
+  }
+
+  let winner = playerScore > computerScore ? "You" : "Opponent";
+
+  setTimeout(() => {
+    toggleModal({
+      modal: { class: "text-center", content: "" },
+      modalPlacer: { class: "modal-dialog-centered", content: "" },
+      title: { class: "", content: `${winner} Won, Good Game` },
+      body: {
+        class: "",
+        content: `<div class="text-primary font-weight-bold">Player: ${playerScore}</div><div class="text-danger font-weight-bold">Opponent: ${computerScore}</div>`,
+      },
+      footer: { class: "", content: "" },
+      actionButton: { class: "", content: "Rematch" },
+      timeout: 0,
+      executeClose: false,
+    });
+  }, 1650);
   //in modal display:
   //  both players points
   //  declare winner
@@ -283,6 +326,32 @@ function endGame() {
 
 function swap() {
   //TODO:
+  toggleModal({
+    modal: { class: "text-center", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    modalHeader: { class: "d-none", content: "" },
+    title: {
+      class: "",
+      content: "",
+    },
+    body: {
+      class: "mh-100",
+      content:
+        ($("#rack .tile").length > bag.length
+          ? `<div class="alert alert-danger" role="alert">You can only swap up to ${bag.length} tile(s)</div>`
+          : ``) + generateRack($("#rack").children(".tile").toArray()),
+    },
+    footer: { class: "justify-content-center", content: "" },
+    actionButton: { class: "executeSwap", content: "Confirm" },
+    timeout: 0,
+    executeClose: false,
+  });
+  $(".selectTile").click(function () {
+    let under = $(".selected").length < bag.length;
+    if (under || $(this).hasClass("selected")) {
+      $(this).toggleClass("selected");
+    }
+  });
   // console.log("Swap");
   //show player's letters and ask which letters to swap
   //->if cancel
@@ -291,13 +360,21 @@ function swap() {
   //    remove chosen letters
   //    pick new letters in exchange and place them on player's rack
   //    take chosen letters and insert in to bag
-  history.push({
-    isAI: false,
-    points: isValidMove?.pointTally,
-    score: { computerScore, playerScore },
-    skip: { isSwap: true },
+  $(".executeSwap").click(() => {
+    if (!$(".selected").length) return;
+    let { newBag, newRack } = doSwap(bag, $(".selectTile").toArray());
+    bag = newBag;
+    $(`#rack`).empty();
+    newRack.forEach((x) => {
+      $(`#rack`).append(`
+      <div data-drag=${x.drag} class="tile hot">${x.letter}<div>${x.points ? x.points : ""}</div></div>
+      `);
+      setDraggable($(`[data-drag="${x.drag}"]`));
+    });
+
+    passCount = -1;
+    pass(true, true, false);
   });
-  generateTable(history);
 }
 
 function mix() {
@@ -325,28 +402,38 @@ function recall() {
   $("#passPlay").text("Pass");
 }
 
-function pass(wasClicked = false) {
+function pass(wasClicked = false, isSwap, isAI) {
   //TODO:
   // console.log("turn passed");
   //if param = true ->
   //    add to passCount
+
+  if (isSwap !== undefined) {
+    //TODO: find out why not happening when player clicks "Pass"
+    history.push({
+      isAI: isAI,
+      points: isValidMove?.pointTally,
+      score: { computerScore, playerScore },
+      skip: { isSwap: isSwap },
+    });
+    generateTable(history);
+  }
+
   if (wasClicked) {
-    if (playersTurn) {
-      history.push({
-        isAI: false,
-        points: isValidMove?.pointTally,
-        score: { computerScore, playerScore },
-        skip: { isSwap: false },
+    if (isAI) {
+      toggleModal({
+        executeClose: true,
       });
-      generateTable(history);
-    } else if (passCount !== -1) {
-      history.push({
-        isAI: true,
-        points: isValidMove?.pointTally,
-        score: { computerScore, playerScore },
-        skip: { isSwap: false },
+      toggleModal({
+        modal: { class: "", content: "" },
+        modalPlacer: { class: "modal-dialog-centered", content: "" },
+        title: { class: "", content: "Opponent chose to pass" },
+        body: { class: "d-none", content: "" },
+        footer: { class: "d-none", content: "" },
+        actionButton: { class: "", content: "" },
+        timeout: 2250,
+        executeClose: false,
       });
-      generateTable(history);
     }
     passCount++;
   }
@@ -455,7 +542,18 @@ function play() {
       }
     }
     if (!bag.length && (!$("#rack .tile").length || !rivalRack.length)) {
-      console.log("Game!!");
+      setTimeout(() => {
+        toggleModal({
+          modal: { class: "", content: "" },
+          modalPlacer: { class: "", content: "" },
+          title: { class: "text-primary", content: `Opponent played: <b>"${wordUsed}"</b>` },
+          body: { class: "d-none", content: "" },
+          footer: { class: "d-none", content: "" },
+          actionButton: { class: "", content: "" },
+          timeout: 2200,
+          executeClose: false,
+        });
+      }, 1650);
       return endGame();
     }
 
@@ -465,9 +563,6 @@ function play() {
     $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]);
 
     setTimeout(() => {
-      // toggleModal({
-      //   executeClose: true,
-      // });
       toggleModal({
         modal: { class: "", content: "" },
         modalPlacer: { class: "", content: "" },

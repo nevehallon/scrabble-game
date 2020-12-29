@@ -80,30 +80,41 @@ div#outer_rack {
   img {
     width: 412px;
   }
+}
 
-  div#rack {
-    height: 45px;
-    width: 100%;
-    position: relative;
-    bottom: 75px;
-    display: grid;
-    grid-template-columns: repeat(7, 50px);
-    gap: 5px;
-    justify-content: center;
+div#rack,
+div.rackCopy {
+  height: 45px;
+  width: 100%;
+  position: relative;
+  bottom: 75px;
+  display: grid;
+  grid-template-columns: repeat(7, 50px);
+  gap: 5px;
+  justify-content: center;
 
-    div.tile {
-      width: 50px !important;
-      height: 55px !important;
+  div.tile {
+    width: 50px !important;
+    height: 55px !important;
+    font-weight: bolder !important;
+    font-size: xx-large !important;
+
+    div {
+      bottom: 12px !important;
+      left: 32px !important;
       font-weight: bolder !important;
-      font-size: xx-large !important;
-
-      div {
-        bottom: 12px !important;
-        left: 32px !important;
-        font-weight: bolder !important;
-        font-size: small !important;
-      }
+      font-size: small !important;
     }
+  }
+}
+div.rackCopy {
+  position: unset;
+  div.tile {
+    cursor: pointer;
+  }
+  div.tile.selected {
+    box-shadow: inset 0px 0px 20px 7px;
+    color: navy;
   }
 }
 
