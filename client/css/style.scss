@@ -216,7 +216,8 @@ div.modal-body::-webkit-scrollbar-thumb {
   background: #000000;
 }
 
-div.tilesLeft {
+div.tilesLeft,
+div.blankOptions {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   justify-items: center;
@@ -235,4 +236,16 @@ div.tilesLeft {
       zoom: 0.7;
     }
   }
+}
+
+div.blankOptions {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  width: 100%;
+  div.tile {
+    cursor: pointer;
+  }
+}
+
+div.setBlank {
+  font-style: italic;
 }

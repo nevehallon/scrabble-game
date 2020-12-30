@@ -5,6 +5,7 @@ localforage.config({
 
 import { generateRack, doSwap } from "./letterSwap.js";
 import { generateTable } from "./playHIstory.js";
+import { generateOptions } from "./blankOptions.js";
 import { generateRemainder } from "./remainingLetters.js";
 import toggleModal from "./modal.js";
 import letters from "./scrabbleLetters.js";
@@ -32,7 +33,7 @@ let rivalRack = [];
 const debugging = false; //? change to true for the AI to play it self
 
 let bag = _.shuffle(_.shuffle(letters));
-bag = _.drop(bag, 86); //? uncomment for doing tests on a shorter game
+// bag = _.drop(bag, 86); //? uncomment for doing tests on a shorter game
 
 updateGameState();
 getWordTrieStr();
@@ -41,9 +42,10 @@ getWordTrieStr();
 
 function deal2Player() {
   for (let i = 0; i < 7; i++) {
+    // let { letter, points } = { letter: "", points: 0 }; //? uncomment to test player turn with blank tiles
     let { letter, points } = _.pullAt(bag, [0])[0];
     $(`#rack`).append(`
-        <div data-drag=${i} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
+        <div data-drag=${i} class="tile hot ${points ? "" : "blank"}">${letter}<div>${points ? points : ""}</div></div>
         `);
     setDraggable($(`[data-drag="${i}"]`));
   }
@@ -402,7 +404,8 @@ function swap() {
   //    remove chosen letters
   //    pick new letters in exchange and place them on player's rack
   //    take chosen letters and insert in to bag
-  $(".executeSwap").click(() => {
+  $(".executeSwap").click((e) => {
+    e.stopImmediatePropagation();
     if (!$(".selected").length) return;
     let { newBag, newRack } = doSwap(bag, $(".selectTile").toArray());
     bag = newBag;
@@ -435,6 +438,9 @@ function recall() {
   let toBeRecalled = $(".column .hot").toArray();
   $(".column .hot").remove();
   toBeRecalled.forEach((tile) => {
+    if ($(tile).hasClass("setBlank") && $(tile).hasClass("hot")) {
+      $(tile).html("<div></div>").removeClass(".setBlank").addClass("blank");
+    }
     $("#rack").append(tile);
     setDraggable($(tile));
   });
@@ -690,6 +696,62 @@ function showScoreHistory() {
   //show list of moves. who played what and how many points were earned
 }
 
+const setModalOptions = (backdrop, keyboard) => {
+  $("#modal").data("bs.modal")._config.backdrop = backdrop;
+  $("#modal").data("bs.modal")._config.keyboard = keyboard;
+};
+
+function handleBlank(blank, setTile) {
+  toggleModal({
+    executeClose: true,
+  });
+  toggleModal({
+    modal: { class: "text-center", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    modalHeader: { class: "d-none", content: "" },
+    title: { class: "", content: `` },
+    body: { class: "mh-100", content: generateOptions() },
+    footer: { class: "justify-content-center", content: "" },
+    actionButton: { class: "d-none", content: "" },
+    timeout: 0,
+    executeClose: false,
+  });
+  setModalOptions("static", false);
+
+  let addClick = () => {
+    $("#closeModal")
+      .off("click")
+      .click((e) => {
+        if (blank.text() !== "") return;
+        zoomOut();
+        blank.appendTo("#rack");
+        repaintBoard();
+        $("#closeModal").off("click");
+      });
+  };
+  $("#closeModal").off("click");
+
+  addClick();
+  $(".blankChoices").click(function (e) {
+    e.stopImmediatePropagation();
+
+    let letter = $(this).text().trim("").slice(0, 1);
+
+    blank.html(`${letter}<div style="bottom: 12px; left: 32px; font-weight: bolder; font-size: small;">0</div>`);
+    repaintBoard();
+    blank.removeClass("blank");
+    blank.addClass("setBlank");
+
+    setTile.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+
+    toggleModal({
+      executeClose: true,
+    });
+
+    $("#closeModal").removeClass("closeBtn");
+  });
+}
+
 $("#bagBtn").click(showBagContent);
 $("#scoresBtn").click(showScoreHistory);
 $("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
@@ -715,6 +777,10 @@ function setDraggable(x) {
         if (ui.helper.data("rejected") === true) {
           ui.helper.offset(ui.helper.data("original-position"));
         }
+
+      if ($(this).hasClass("setBlank") && $(this).parent().attr("id") === "rack") {
+        $(this).html("<div></div>").removeClass(".setBlank").addClass("blank");
+      }
 
       removeDuplicates();
 
@@ -774,6 +840,8 @@ $(".column").droppable({
 
     zoomIn();
     tileClone[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+
+    if ($(this).children(".tile").hasClass("blank")) handleBlank($(this).children(".tile"), tileClone[0]);
   },
 });
 

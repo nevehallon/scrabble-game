@@ -271,7 +271,7 @@
       </div>
     </div>
 
-    <div id="actionBar" class="d-flex justify-content-center">
+    <div id="actionBar" class="d-flex justify-content-around">
       <button class="btn btn-sm font-weight-bold" id="bagBtn">100</button>
       <button class="btn btn-outline-dark p-0 px-1 font-weight-bold" id="scoresBtn">
         <div class="d-flex justify-content-between">
@@ -282,11 +282,11 @@
         </div>
       </button>
       <button id="mix" class="btn btn-primary">Mix</button>
-      <button id="zoomOut" class="btn btn-warning">Zoom Out</button>
+      <!-- <button id="zoomOut" class="btn btn-warning">Zoom Out</button> -->
       <button id="swapRecall" class="btn btn-secondary">Swap</button>
       <button id="passPlay" class="btn btn-info">Pass</button>
     </div>
-    <button id="startGame" class="btn btn-outline-info">Rematch</button>
+    <button id="startGame" class="btn btn-outline-info d-none">Rematch</button>
 
     <br />
   </div>
@@ -307,7 +307,7 @@
           ...
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" id="closeModal" class="btn btn-secondary" data-dismiss="modal">Close</button>
           <button id="actionButton" type="button" class="btn btn-primary"></button>
         </div>
 
