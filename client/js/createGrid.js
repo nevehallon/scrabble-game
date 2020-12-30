@@ -1,4 +1,12 @@
-const gridState = createGrid();
+let gridState = createGrid();
+const cleanGrid = _.cloneDeep(gridState);
+
+function cleanTheGrid() {
+  gridState = cleanGrid;
+  updateGameState();
+  $("#board .column").empty();
+  $("#rack").empty();
+}
 
 function createGrid() {
   let count = 0;
@@ -57,4 +65,4 @@ function updateGameState() {
   gridState.gridLetters = gridLetters;
 }
 
-export { gridState, updateGameState };
+export { gridState, updateGameState, cleanTheGrid };

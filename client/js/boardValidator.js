@@ -42,7 +42,7 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
     if (isPlayer) {
       if (firstTurn && !board[7][7].letter.trim()) {
         playError();
-        throw "Error: Your word must touch an existing word or the center star";
+        throw "(45) Your word must touch an existing word or the center star";
       }
 
       let hotPivot;
@@ -56,7 +56,7 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
 
           if (hotCompare[0] !== hotPivot[0] && hotCompare[1] !== hotPivot[1]) {
             playError();
-            throw "(1) The letters you play must lie on the same row or column, and must be connected to each other";
+            throw "(59) The letters you play must lie on the same row or column, and must be connected to each other";
           }
         });
       }
@@ -135,7 +135,7 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
 
       if (ids.length == 2) {
         playError();
-        throw `Word must contain at least two letters`;
+        throw `138) Word must contain at least two letters`;
       }
     }
     let touching = false;
@@ -287,7 +287,7 @@ function validate(gridState, firstTurn, wordsLogged, isPlayer) {
       if (!trie().hasWord(word)) {
         if (isPlayer) {
           playError();
-          throw `The word: '${word}' is INVALID `;
+          throw `290) The word: '${word}' is INVALID `;
         } else {
           hasWords = false;
         }

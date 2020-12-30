@@ -10,12 +10,10 @@ import toggleModal from "./modal.js";
 import letters from "./scrabbleLetters.js";
 import { getWordTrieStr } from "./getRequests.js";
 import { calcPcMove } from "./compute.js";
-import { gridState, updateGameState } from "./createGrid.js";
+import { gridState, updateGameState, cleanTheGrid } from "./createGrid.js";
 import validate from "./boardValidator.js";
-// import trie from "../src/trie-prefix-tree/index.js";
 // ?  temp1.forEach((x,i) => console.log(trie().hasWord(x), i))
-window.toggleModal = toggleModal;
-// console.log(trie);
+// window.toggleModal = toggleModal; //? uncomment to let method be available in console
 
 let playerScore = 0;
 let computerScore = 0;
@@ -29,13 +27,12 @@ let isValidMove = false;
 let playersTurn = false;
 let wordsLogged = [];
 let history = [];
-let swappedTileId = 4321;
+let rivalRack = [];
 
 const debugging = false; //? change to true for the AI to play it self
 
-let bag = _.shuffle(_.shuffle(letters)); //TODO: change to const
-bag = _.drop(bag, 80); //? uncomment for doing tests on a shorter game
-let rivalRack = [];
+let bag = _.shuffle(_.shuffle(letters));
+bag = _.drop(bag, 86); //? uncomment for doing tests on a shorter game
 
 updateGameState();
 getWordTrieStr();
@@ -81,13 +78,15 @@ function alertStarter(winner) {
 }
 
 function startGame() {
+  $("#startGame").hide();
+
   let { player, pc } = whoStarts();
   if (player === pc) return startGame();
 
   lettersUsed = 14;
   $("#bagBtn").text(100 - lettersUsed);
 
-  $("#startGame").attr("disabled", "disabled"); //TODO: remove start btn
+  $("#startGame").attr("disabled", "disabled");
   resetSortable();
 
   if (player < pc) {
@@ -110,11 +109,40 @@ function startGame() {
   }
 }
 
+function rematch() {
+  location.reload();
+  //TODO: implement rematch without reloading page
+  // cleanTheGrid();
+  // zoomOut();
+  // playerScore = 0;
+  // computerScore = 0;
+  // lettersUsed = 0;
+  // passCount = 0;
+  // isZoomed = false;
+  // fired = false;
+  // overRack = false;
+  // firstTurn = true;
+  // isValidMove = false;
+  // playersTurn = false;
+  // wordsLogged = [];
+
+  // history = [];
+
+  // rivalRack = [];
+
+  // bag = _.shuffle(_.shuffle(letters));
+
+  // $("#playerScore").text(playerScore);
+  // $("#pcScore").text(computerScore);
+
+  // $("#actionBar .btn").css({ "pointer-events": "all" });
+  // startGame();
+}
+
 function repaintBoard() {
   isValidMove = false;
   updateGameState();
   isValidMove = validate(gridState, firstTurn, wordsLogged, true);
-  // console.log(isValidMove);
 }
 function bigTile(tile) {
   tile
@@ -176,8 +204,7 @@ function zoomOut() {
   isZoomed = false;
 }
 
-startGame(); //TODO: remove after done w/ pc move
-// pcPlay(); //TODO: remove after done w/ pc move
+startGame();
 generateRemainder(bag);
 function pcSwap() {
   //? .sort((a,b) => b > a ? -1 : 1).filter(x => x !== 0) //for sorting by point value and removing blank tiles
@@ -231,7 +258,6 @@ function pcPlay() {
     timeout: 0,
     executeClose: false,
   });
-  // console.log("pc's turn");
   playersTurn = false;
 
   // if (rivalRack.length < 7 && !bag.length && prompt()) {
@@ -239,17 +265,15 @@ function pcPlay() {
   // }
   // rivalRack = Array(7).fill({ letter: "Q", points: 10 }); //[...rivalRack.slice(0, 6), { letter: "", points: 0 }]; //? uncomment for testing
 
-  //TODO:
   zoomOut();
   rivalRack.sort((a, b) => (b.letter ? 1 : -1)); //make sure that blanks are last tile
   setTimeout(async () => {
     try {
       isValidMove = await calcPcMove(gridState, firstTurn, wordsLogged, rivalRack);
-      // console.log(isValidMove);
       // prettier-ignore
       !isValidMove && rivalRack.length && bag.length ? 
       pcSwap() : isValidMove ? 
-      play() : debugging ? 
+      play(true) : debugging ? 
       false : pass(true, false, true);
     } catch (error) {
       if (error?.message?.includes("ranch")) {
@@ -260,13 +284,13 @@ function pcPlay() {
       pcPlay();
     }
   }, 50);
-  // $("#board .tile").removeClass("pcPlay"); //TODO: find a better place for this
 }
 
 function endGame() {
-  //TODO:
   zoomOut();
-  $("#utilBar .btn").not("#scoresBtn").css({ "pointer-events": "none" }); //?prevent players from continuing
+  $("#startGame")[0].removeAttribute("disabled");
+  $("#startGame").show();
+  $("#actionBar .btn").not("#scoresBtn, #startGame").css({ "pointer-events": "none" }); //?prevent players from continuing (can still see the score history, and shows a button for a rematch)
 
   $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]); //?remove hot tiles from board
 
@@ -275,6 +299,15 @@ function endGame() {
       .children("div")
       .toArray()
       .reduce((acc, cur) => acc + +cur.innerHTML, 0);
+
+    history.push({
+      isAI: true,
+      word: "Opponent Won",
+      points: "",
+      score: { computerScore: `${computerScore} + ${sum}`, playerScore: `${playerScore} - ${sum}` },
+      skip: false,
+    });
+    generateTable(history);
 
     playerScore -= sum;
     computerScore += sum;
@@ -288,6 +321,15 @@ function endGame() {
 
   if (!$("#rack .tile").length) {
     let sum = rivalRack.reduce((acc, cur) => acc + cur, 0);
+
+    history.push({
+      isAI: false,
+      word: "Player Won",
+      points: "",
+      score: { computerScore: `${computerScore} - ${sum}`, playerScore: `${playerScore} + ${sum}` },
+      skip: false,
+    });
+    generateTable(history);
 
     playerScore += sum;
     computerScore -= sum;
@@ -312,20 +354,21 @@ function endGame() {
         content: `<div class="text-primary font-weight-bold">Player: ${playerScore}</div><div class="text-danger font-weight-bold">Opponent: ${computerScore}</div>`,
       },
       footer: { class: "", content: "" },
-      actionButton: { class: "", content: "Rematch" },
+      actionButton: { class: "rematch", content: "Rematch" },
       timeout: 0,
       executeClose: false,
     });
+
+    $(".rematch").click(rematch);
   }, 1650);
+
   //in modal display:
   //  both players points
   //  declare winner
   //  offer rematch
-  // console.log("gameOver");
 }
 
 function swap() {
-  //TODO:
   toggleModal({
     modal: { class: "text-center", content: "" },
     modalPlacer: { class: "modal-dialog-centered", content: "" },
@@ -352,7 +395,6 @@ function swap() {
       $(this).toggleClass("selected");
     }
   });
-  // console.log("Swap");
   //show player's letters and ask which letters to swap
   //->if cancel
   //    close modal and return
@@ -389,7 +431,6 @@ function mix() {
 
 function recall() {
   if (!$(".column .hot").length) return;
-  // console.log("Recall");
   //remove all "hot" tiles from ".column .hot" and re-add them to player's rack
   let toBeRecalled = $(".column .hot").toArray();
   $(".column .hot").remove();
@@ -402,17 +443,14 @@ function recall() {
   $("#passPlay").text("Pass");
 }
 
-function pass(wasClicked = false, isSwap, isAI) {
-  //TODO:
-  // console.log("turn passed");
+function pass(wasClicked = false, isSwap, isAI, legalClick) {
+  if (legalClick === false) return;
   //if param = true ->
   //    add to passCount
 
   if (isSwap !== undefined) {
-    //TODO: find out why not happening when player clicks "Pass"
     history.push({
       isAI: isAI,
-      points: isValidMove?.pointTally,
       score: { computerScore, playerScore },
       skip: { isSwap: isSwap },
     });
@@ -450,17 +488,51 @@ function pass(wasClicked = false, isSwap, isAI) {
   //    allow next turn
   // if (debugging) firstTurn = false;
   setTimeout(() => {
-    if (playersTurn) $("#board .tile").removeClass("pcPlay"); //TODO: make sure this is the best place for this
+    if (playersTurn) $("#board .tile").removeClass("pcPlay");
 
     playersTurn || debugging ? pcPlay() : (playersTurn = true);
   }, 250);
 }
 
-function play() {
-  //TODO: make compatible with pc plays
+function prePass(wasClicked, isSwap, isAI, legalClick) {
+  if (legalClick === false) return;
+  toggleModal({
+    modal: { class: "", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    title: { class: "d-none", content: "" },
+    body: { class: "", content: "Are you sure you want to pass?" },
+    footer: { class: "", content: "" },
+    actionButton: { class: "doPass", content: "Confirm" },
+    timeout: 0,
+    executeClose: false,
+  });
+  $(".doPass").click((e) => {
+    e.stopImmediatePropagation();
+    toggleModal({
+      executeClose: true,
+    });
+    pass(wasClicked, isSwap, isAI, legalClick);
+  });
+}
+
+function play(isAI = false) {
   if (!isValidMove.words && debugging) playersTurn = true;
-  if (!isValidMove.words) return alert(isValidMove); //TODO: make into modal alert
-  // console.log("word played");
+  if (!isValidMove.words) {
+    return toggleModal({
+      modal: { class: "", content: "" },
+      modalPlacer: { class: "modal-dialog-centered", content: "" },
+      modalHeader: { class: "d-none", content: "" },
+      title: { class: "", content: "" },
+      body: {
+        class: "text-center",
+        content: `<div class="alert alert-danger" role="alert">${isValidMove.slice(4)}</div>`,
+      },
+      footer: { class: "justify-content-center", content: "" },
+      actionButton: { class: "d-none", content: "" },
+      timeout: 0,
+      executeClose: false,
+    });
+  }
 
   if (isValidMove.hasOwnProperty("rivalRack")) {
     computerScore += isValidMove.pointTally;
@@ -493,7 +565,7 @@ function play() {
 
   wordsLogged = isValidMove.words; //adding to the words that have been played
 
-  if (playersTurn) {
+  if (playersTurn && !isAI) {
     let refill = $("#board .hot").length;
     let tilesPlayed = $("#board .hot").parent().toArray();
     //fill rack back up to 7 or what ever is left in bag
@@ -505,7 +577,6 @@ function play() {
 
       if (bag.length) {
         let { letter, points } = _.pullAt(bag, [0])[0];
-        // console.log(letter, points);
         $(`#rack`).append(`
     <div data-drag=${++lettersUsed} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
     `);
@@ -517,7 +588,6 @@ function play() {
       return endGame();
     }
 
-    // console.log("letters used: ", lettersUsed);
     $("#bagBtn").text(100 - lettersUsed);
     resetSortable();
 
@@ -557,7 +627,6 @@ function play() {
       return endGame();
     }
 
-    // console.log("letters used: ", lettersUsed, rivalRack);
     $("#bagBtn").text(100 - lettersUsed);
     //disable drag on "hot" tiles, remove "hot" & "multiplier" class from ".column .hot" and call pass()
     $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]);
@@ -584,7 +653,6 @@ function play() {
 }
 
 function showBagContent() {
-  //TODO: make into modal
   toggleModal({
     executeClose: true,
   });
@@ -602,7 +670,6 @@ function showBagContent() {
   // list letters + blank and how many remain of each tile
 }
 function showScoreHistory() {
-  //TODO: make into modal
   toggleModal({
     executeClose: true,
   });
@@ -627,8 +694,8 @@ $("#bagBtn").click(showBagContent);
 $("#scoresBtn").click(showScoreHistory);
 $("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
 $("#swapRecall").click(() => ($("#swapRecall").text() == "Swap" ? swap() : recall()));
-$("#passPlay").click(() => ($("#passPlay").text() === "Pass" ? pass(true) : play()));
-$("#startGame").click(startGame);
+$("#passPlay").click(() => ($("#passPlay").text() === "Pass" ? prePass(true, false, false, playersTurn) : play()));
+$("#startGame").click(rematch);
 $("#zoomOut").click(zoomOut);
 $("#board .column").dblclick((e) => (isZoomed ? zoomOut() : zoomIn(e.target)));
 

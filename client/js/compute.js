@@ -2,7 +2,7 @@ import { getWordValues } from "./getRequests.js";
 import validate from "./boardValidator.js";
 import trie from "../src/trie-prefix-tree/index.js";
 
-window.trie = trie; //! remove from window - used only for debugging
+//window.trie = trie; //? used only for debugging
 
 const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 let idCount = 122;

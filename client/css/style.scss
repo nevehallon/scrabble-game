@@ -17,7 +17,6 @@ div#frame {
 }
 
 div#board {
-  // transform: scale(2);
   min-width: 400px;
   max-width: 400px;
   display: grid;
@@ -186,8 +185,6 @@ svg.spinner {
   width: 65px;
   height: 65px;
   border-radius: 50%;
-  // background: rgb(0, 0, 0);
-  // background: radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 76%);
   color: blue;
   transform: translateZ(0);
   animation: spin 3s infinite linear alternate-reverse;
