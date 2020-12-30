@@ -696,12 +696,13 @@ function showScoreHistory() {
   //show list of moves. who played what and how many points were earned
 }
 
-const setModalOptions = (backdrop, keyboard) => {
+function setModalOptions(backdrop, keyboard) {
+  console.log("works");
   $("#modal").data("bs.modal")._config.backdrop = backdrop;
   $("#modal").data("bs.modal")._config.keyboard = keyboard;
-};
+}
 
-function handleBlank(blank, setTile) {
+function handleBlank(blank) {
   toggleModal({
     executeClose: true,
   });
@@ -727,11 +728,13 @@ function handleBlank(blank, setTile) {
         blank.appendTo("#rack");
         repaintBoard();
         $("#closeModal").off("click");
+        setModalOptions(true, true);
       });
   };
   $("#closeModal").off("click");
 
   addClick();
+
   $(".blankChoices").click(function (e) {
     e.stopImmediatePropagation();
 
@@ -742,13 +745,14 @@ function handleBlank(blank, setTile) {
     blank.removeClass("blank");
     blank.addClass("setBlank");
 
-    setTile.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    blank[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 
     toggleModal({
       executeClose: true,
     });
 
     $("#closeModal").removeClass("closeBtn");
+    setModalOptions(true, true);
   });
 }
 
@@ -781,6 +785,8 @@ function setDraggable(x) {
       if ($(this).hasClass("setBlank") && $(this).parent().attr("id") === "rack") {
         $(this).html("<div></div>").removeClass(".setBlank").addClass("blank");
       }
+
+      if ($(this).hasClass("blank") && $(this).parent().hasClass("column")) handleBlank($(this));
 
       removeDuplicates();
 
@@ -840,8 +846,6 @@ $(".column").droppable({
 
     zoomIn();
     tileClone[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-
-    if ($(this).children(".tile").hasClass("blank")) handleBlank($(this).children(".tile"), tileClone[0]);
   },
 });
 
