@@ -1,4 +1,5 @@
 import letters from "./letterToPoints.js";
+import { getTrie } from "../src/trie-prefix-tree/index.js";
 
 async function getWordTrieStr() {
   try {
@@ -12,6 +13,7 @@ async function getWordTrieStr() {
     let localReverseTrieStr = reverseWordTrieStr;
     await localforage.setItem("wordTrieStr", localTrieStr);
     await localforage.setItem("reverseWordTrieStr", localReverseTrieStr);
+    getTrie();
   } catch (error) {
     console.error(error);
   }

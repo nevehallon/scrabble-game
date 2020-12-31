@@ -1,8 +1,8 @@
 import { getWordValues } from "./getRequests.js";
 import validate from "./boardValidator.js";
-import trie from "../src/trie-prefix-tree/index.js";
+import { Trie } from "../src/trie-prefix-tree/index.js";
 
-//window.trie = trie; //? used only for debugging
+//window.Trie = Trie; //? used only for debugging
 
 const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 let idCount = 122;
@@ -244,8 +244,8 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
               let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
               //check if the cells on both side of the new tile make a word together
 
-              if (cellsJoined.length > 1 && !trie().hasWord(cellsJoined)) return;
-              if (isPre ? trie().isPrefix(joined) : trie().isSuffix(joined)) {
+              if (cellsJoined.length > 1 && !Trie().hasWord(cellsJoined)) return;
+              if (isPre ? Trie().isPrefix(joined) : Trie().isSuffix(joined)) {
                 checkedOut.push(joined);
                 level._1.branch.push({
                   letters: {
@@ -258,7 +258,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                   },
                   startCoord: [nextX, nextY],
                 });
-                if (!isPre ? trie().hasWord([...joined].reverse().join("")) : trie().hasWord(joined)) {
+                if (!isPre ? Trie().hasWord([...joined].reverse().join("")) : Trie().hasWord(joined)) {
                   //setting up 'word tangents'
                   level._1.branch2.push({
                     letters: {
@@ -410,12 +410,12 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     taken = true;
                   }
                   let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
-                  if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                  if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                     let isBordered = borderCell !== undefined && borderCell.letter !== " " ? true : false;
                     let boarderLetter = isBordered ? borderCell.letter : "";
                     let joined = [boarderLetter, letter, ...start.letters.a].join("");
                     if (!checkedOut4Branch.includes(joined)) {
-                      if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                      if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                         if (startingCell !== undefined) {
                           checkedOut4Branch.push(joined); //?
                           temp1.letters.push({
@@ -445,13 +445,13 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                               taken = true;
                             }
                             cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
-                            if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                            if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                               let isBordered =
                                 borderCellInverse !== undefined && borderCellInverse.letter !== " " ? true : false;
                               let boarderLetter = isBordered ? borderCellInverse.letter : "";
                               let joined = [...temp1.letters[0].a, letter, boarderLetter].join("");
                               if (!checkedOut4Branch.includes(joined)) {
-                                if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                                if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                                   checkedOut4Branch.push(joined); //?
                                   temp1.letters.unshift({
                                     a: [...temp1.letters[0].a, letter],
@@ -494,12 +494,12 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     taken = true;
                   }
                   let cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
-                  if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                  if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                     let isBordered = borderCellInverse !== undefined && borderCellInverse.letter !== " " ? true : false;
                     let boarderLetter = isBordered ? borderCellInverse.letter : "";
                     let joined = [...start.letters.a, letter, boarderLetter].join("");
                     if (!checkedOut4Branch.includes(joined)) {
-                      if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                      if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                         if (startingCellInverse !== undefined) {
                           checkedOut4Branch.push(joined); //?
                           temp2.letters.unshift({
@@ -533,12 +533,12 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                               taken = true;
                             }
                             cellsJoined = (cellsB4 + letter + cellsAfter).trim();
-                            if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                            if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                               let isBordered = borderCell !== undefined && borderCell.letter !== " " ? true : false;
                               let boarderLetter = isBordered ? borderCell.letter : "";
                               let joined = [boarderLetter, letter, ...temp2.letters[0].a].join("");
                               if (!checkedOut4Branch.includes(joined)) {
-                                if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                                if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                                   checkedOut4Branch.push(joined); //?
                                   temp2.letters.unshift({
                                     a: [letter, ...temp2.letters[0].a],
@@ -729,13 +729,13 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     taken = true;
                   }
                   let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
-                  if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                  if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                     let isBordered = borderCell !== undefined && borderCell.letter !== " " ? true : false;
                     let boarderLetter = isBordered ? borderCell.letter : "";
                     let joined = [boarderLetter, letter, ...start.letters.a].join("");
                     if (!checkedOut4NewBranch.includes(joined)) {
                       //?^^move to else condition without "!"^^?
-                      if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                      if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                         if (startingCell !== undefined) {
                           checkedOut4NewBranch.push(joined); //?
                           temp1.letters.push({
@@ -765,13 +765,13 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                               taken = true;
                             }
                             cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
-                            if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                            if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                               let isBordered =
                                 borderCellInverse !== undefined && borderCellInverse.letter !== " " ? true : false;
                               let boarderLetter = isBordered ? borderCellInverse.letter : "";
                               let joined = [...temp1.letters[0].a, letter, boarderLetter].join("");
                               if (!checkedOut4NewBranch.includes(joined)) {
-                                if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                                if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                                   checkedOut4NewBranch.push(joined); //?
                                   temp1.letters.unshift({
                                     a: [...temp1.letters[0].a, letter],
@@ -814,13 +814,13 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                     taken = true;
                   }
                   let cellsJoined = (cellsB4Inverse + letter + cellsAfter).trim();
-                  if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                  if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                     let isBordered = borderCellInverse !== undefined && borderCellInverse.letter !== " " ? true : false;
                     let boarderLetter = isBordered ? borderCellInverse.letter : "";
                     let joined = [...start.letters.a, letter, boarderLetter].join("");
                     if (!checkedOut4NewBranch.includes(joined)) {
                       //?^^move to else condition without "!"^^?
-                      if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                      if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                         if (startingCellInverse !== undefined) {
                           checkedOut4NewBranch.push(joined); //?
                           temp2.letters.unshift({
@@ -854,12 +854,12 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                               taken = true;
                             }
                             cellsJoined = (cellsB4 + letter + cellsAfter).trim();
-                            if ((cellsJoined.length > 1 && trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
+                            if ((cellsJoined.length > 1 && Trie().hasWord(cellsJoined)) || cellsJoined.length < 2) {
                               let isBordered = borderCell !== undefined && borderCell.letter !== " " ? true : false;
                               let boarderLetter = isBordered ? borderCell.letter : "";
                               let joined = [boarderLetter, letter, ...temp2.letters[0].a].join("");
                               if (!checkedOut4NewBranch.includes(joined)) {
-                                if (trie().isSuffix(joined.split("").reverse().join("")) || trie().isPrefix(joined)) {
+                                if (Trie().isSuffix(joined.split("").reverse().join("")) || Trie().isPrefix(joined)) {
                                   checkedOut4NewBranch.push(joined); //?
                                   temp2.letters.unshift({
                                     a: [letter, ...temp2.letters[0].a],
@@ -963,14 +963,14 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
                   taken = true;
                 } else {
                   let cellsJoined = (cellsB4 + letter + cellsAfter).trim();
-                  if (cellsJoined.length > 1 && !trie().hasWord(cellsJoined)) return;
+                  if (cellsJoined.length > 1 && !Trie().hasWord(cellsJoined)) return;
                 }
                 let isBordered = borderCellInfo && borderCellInfo.letter !== " " ? true : false;
                 let boarderLetter = isBordered ? borderCellInfo.letter : "";
                 let joined = [...start.letters.a, letter, boarderLetter].join("");
 
                 if (!checkedOut.includes(joined)) {
-                  if (isPre ? trie().isPrefix(joined) : trie().isSuffix(joined)) {
+                  if (isPre ? Trie().isPrefix(joined) : Trie().isSuffix(joined)) {
                     checkedOut.push(joined);
                     cur.push({
                       letters: {
@@ -1066,7 +1066,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let setWord = isPre ? word.a : word.a.reverse();
             let setPoints = isPre ? potentialBranchMid[i].points.a : potentialBranchMid[i].points.a.reverse();
 
-            if (trie().hasWord(borderLetterInverse.concat(setWord.join("")))) {
+            if (Trie().hasWord(borderLetterInverse.concat(setWord.join("")))) {
               potentialWordsMain.push({
                 numHotTiles: rivalRack.length - word.b.length,
                 remaining: word.b.map((x, index) => {
@@ -1092,7 +1092,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let setWord = word.a;
             let setPoints = potentialBranch2Mid[i].points.a;
 
-            if (trie().hasWord(setWord.join("")) || trie().hasWord(setWord.reverse().join(""))) {
+            if (Trie().hasWord(setWord.join("")) || Trie().hasWord(setWord.reverse().join(""))) {
               potentialWordsMain.push({
                 a_set: supply[set].join(""),
                 numHotTiles: rivalRack.length - word.b.length,
@@ -1122,7 +1122,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
             let word = potentialNewBranchMid[i].letters;
             let setWord = word.a;
             let setPoints = potentialNewBranchMid[i].points.a;
-            if (trie().hasWord(setWord.join("")) || trie().hasWord(setWord.reverse().join(""))) {
+            if (Trie().hasWord(setWord.join("")) || Trie().hasWord(setWord.reverse().join(""))) {
               potentialWordsMain.push({
                 a_joined: setWord.join(""), //TODO: get rid of prop
                 set: supply[set].join(""),
