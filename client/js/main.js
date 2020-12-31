@@ -405,7 +405,6 @@ function swap() {
   //    pick new letters in exchange and place them on player's rack
   //    take chosen letters and insert in to bag
   $(".executeSwap").click((e) => {
-    e.stopImmediatePropagation();
     if (!$(".selected").length) return;
     let { newBag, newRack } = doSwap(bag, $(".selectTile").toArray());
     bag = newBag;
@@ -415,6 +414,7 @@ function swap() {
       <div data-drag=${x.drag} class="tile hot">${x.letter}<div>${x.points ? x.points : ""}</div></div>
       `);
       setDraggable($(`[data-drag="${x.drag}"]`));
+      e.stopImmediatePropagation();
     });
 
     passCount = -1;
@@ -513,11 +513,11 @@ function prePass(wasClicked, isSwap, isAI, legalClick) {
     executeClose: false,
   });
   $(".doPass").click((e) => {
-    e.stopImmediatePropagation();
     toggleModal({
       executeClose: true,
     });
     pass(wasClicked, isSwap, isAI, legalClick);
+    e.stopImmediatePropagation();
   });
 }
 
