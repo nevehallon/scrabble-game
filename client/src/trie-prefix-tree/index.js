@@ -12,12 +12,16 @@ const PERMS_MIN_LEN = config.PERMS_MIN_LEN;
 let trie;
 let myTrie;
 let myReverseTrie;
-(async () => {
-  myTrie = JSON.parse(await localforage.getItem("wordTrieStr"));
-  trie = myTrie;
+(() => {
+  setTimeout(async () => {
+    myTrie = JSON.parse(await localforage.getItem("wordTrieStr"));
+    trie = myTrie;
+  }, 500);
 })();
-(async () => {
-  myReverseTrie = JSON.parse(await localforage.getItem("reverseWordTrieStr"));
+(() => {
+  setTimeout(async () => {
+    myReverseTrie = JSON.parse(await localforage.getItem("reverseWordTrieStr"));
+  }, 500);
 })();
 
 // console.log(myTrie);

@@ -148,6 +148,11 @@ div.tile:active {
   border: 1px dashed #649696;
 }
 
+div#actionBar {
+  width: 400px;
+  margin: auto;
+}
+
 button#bagBtn {
   background-image: url("https://cdn.pixabay.com/photo/2014/04/02/11/04/bag-305400_960_720.png");
   background-color: #cccccc;
