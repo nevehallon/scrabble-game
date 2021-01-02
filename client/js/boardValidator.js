@@ -20,7 +20,7 @@ function push2Zip(point, multi, index) {
   zipWordMultiplier[index].push(multi);
 }
 function isHot() {
-  $("#passPlay").text("Play");
+  $("#passPlay").text("Play").attr("class", "btn btn-primary");
   $("#swapRecall").text("Recall");
 }
 
@@ -30,7 +30,7 @@ function isNot() {
 }
 
 function playError() {
-  $("#passPlay").text("Play X");
+  $("#passPlay").text("Play X").attr("class", "btn btn-danger");
 }
 
 function validate(gridState, firstTurn, wordsLogged, isPlayer) {

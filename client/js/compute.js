@@ -8,6 +8,8 @@ const abc = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 let idCount = 122;
 
 async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
+  let difficultlyLimit = +localStorage.getItem("difficulty") ? +localStorage.getItem("difficulty") : 15;
+  if (difficultlyLimit > 59) difficultlyLimit = 200;
   let rack = [];
   let pointRack = [];
   let numBlanks = 0;
@@ -25,7 +27,7 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
     if (!wordSet.length) return false;
     let extraCount = 0;
     let candidates = [];
-    let wordSlice = wordSet.slice(0, 5);
+    let wordSlice = wordSet;
     let extraIndex = [];
 
     for (let x = 0; x < wordSlice.length; x++) {
@@ -62,7 +64,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         });
 
       let { words, pointTally } = validate(cleanGrid, firstTurn, wordsLogged, false);
-      candidates.push({ word: words[0], pointTally, start });
+      if (pointTally <= difficultlyLimit) {
+        candidates.push({ word: words[0], pointTally, start });
+      }
     }
 
     let bestWord = _.orderBy(candidates, ["pointTally"], ["desc"])[0];
@@ -96,7 +100,13 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       }
     });
     wordsLogged.push(bestWord.word);
-    return { rivalRack: rivalRack, pointTally: bestWord.pointTally, words: wordsLogged, bestWord: bestWord.word };
+    return {
+      rivalRack: rivalRack,
+      pointTally: bestWord.pointTally,
+      words: wordsLogged,
+      bestWord: bestWord.word,
+      wordsPlayed: [bestWord.word],
+    };
   } else {
     let startingCoords = {}; //? the cells on the board where we can build off from
     let tilesPlayedCoords = [];
@@ -1245,21 +1255,24 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
         }
         gridOrder.push({ x: start[0] + x, y: start[1] + y, taken: !isHot });
       });
-      let { words, pointTally } = validate(cleanGrid, firstTurn, wordsLogged, false);
+      let { words, pointTally, bestWord } = validate(cleanGrid, firstTurn, wordsLogged, false);
       if (badCookie || pointTally === 0) return;
       pointTally = choice.numHotTiles === 7 ? pointTally + 50 : pointTally;
 
-      candidates.push({
-        numHotTiles: choice.numHotTiles,
-        word: choice.word,
-        pointTally,
-        start,
-        remaining: choice.remaining,
-        gridOrder,
-        points: choice.points,
-        reverseOrder: choice.reverseOrder,
-        wordsLogged: words,
-      });
+      if (pointTally <= difficultlyLimit) {
+        candidates.push({
+          numHotTiles: choice.numHotTiles,
+          word: choice.word,
+          pointTally,
+          start,
+          remaining: choice.remaining,
+          gridOrder,
+          points: choice.points,
+          reverseOrder: choice.reverseOrder,
+          wordsLogged: words,
+          wordsPlayed: bestWord,
+        });
+      }
     });
 
     let bestWord = _.orderBy(candidates, ["pointTally"], ["desc"])[0];
@@ -1294,10 +1307,9 @@ async function calcPcMove(gridState, firstTurn, wordsLogged, rivalRack) {
       pointTally: bestWord.pointTally,
       words: bestWord.wordsLogged,
       bestWord: bestWord.reverseOrder ? bestWord.word.reverse().join("") : bestWord.word.join(""),
+      wordsPlayed: bestWord.wordsPlayed,
     };
   }
-
-  //   return the var holding -> {rivalRack, pointTally: bestWord.pointTally, newWordsLogged};TODO:
 }
 
 export { calcPcMove };

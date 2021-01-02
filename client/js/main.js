@@ -4,12 +4,13 @@ localforage.config({
 });
 
 import { generateRack, doSwap } from "./letterSwap.js";
-import { generateTable } from "./playHIstory.js";
+import { generateTable } from "./playHistory.js";
 import { generateOptions } from "./blankOptions.js";
 import { generateRemainder } from "./remainingLetters.js";
+import { generateSettings, giveFeedBack, rangeValues, convertVal } from "./settings.js";
 import toggleModal from "./modal.js";
 import letters from "./scrabbleLetters.js";
-import { getWordTrieStr } from "./getRequests.js";
+import { getWordTrieStr, checkServerStatus } from "./getRequests.js";
 import { calcPcMove } from "./compute.js";
 import { gridState, updateGameState, cleanTheGrid } from "./createGrid.js";
 import validate from "./boardValidator.js";
@@ -180,7 +181,8 @@ function zoomIn(elm) {
   if (!isZoomed) {
     $("#board").css({
       height: "705px",
-      width: "640px",
+      width: "unset",
+      "max-width": "unset",
       "grid-template-columns": "repeat(15, 52px)",
       "grid-template-rows": "repeat(15, 57px)",
       "justify-content": "safe center",
@@ -188,7 +190,13 @@ function zoomIn(elm) {
     });
     bigTile($("#board .tile"));
     isZoomed = true;
-    if (elm) elm.scrollIntoView({ block: "center", inline: "center" });
+    if (elm) {
+      $("body").addClass("stop-scrolling");
+      elm.scrollIntoView({ block: "center", inline: "center" });
+      setTimeout(() => {
+        $("body").removeClass("stop-scrolling");
+      }, 500);
+    }
   }
 }
 
@@ -197,6 +205,7 @@ function zoomOut() {
   $("#board").css({
     height: "412.5px",
     width: "400px",
+    "max-width": "400px",
     "grid-template-columns": "repeat(15, 27.5px)",
     "grid-template-rows": "repeat(15, 27.5px)",
     "justify-content": "center",
@@ -206,7 +215,16 @@ function zoomOut() {
   isZoomed = false;
 }
 
-startGame();
+let serverCheck = async () => {
+  let status = await checkServerStatus();
+  if (status) {
+    return startGame();
+  }
+  setTimeout(() => {
+    serverCheck();
+  }, 1500);
+};
+serverCheck();
 generateRemainder(bag);
 function pcSwap() {
   //? .sort((a,b) => b > a ? -1 : 1).filter(x => x !== 0) //for sorting by point value and removing blank tiles
@@ -411,7 +429,9 @@ function swap() {
     $(`#rack`).empty();
     newRack.forEach((x) => {
       $(`#rack`).append(`
-      <div data-drag=${x.drag} class="tile hot">${x.letter}<div>${x.points ? x.points : ""}</div></div>
+      <div data-drag=${x.drag} class="tile hot ${x.points ? "" : "blank"}">${x.letter}<div>${
+        x.points ? x.points : ""
+      }</div></div>
       `);
       setDraggable($(`[data-drag="${x.drag}"]`));
       e.stopImmediatePropagation();
@@ -545,7 +565,7 @@ function play(isAI = false) {
     $("#pcScore").text(computerScore);
     history.push({
       isAI: true,
-      word: isValidMove.bestWord,
+      word: isValidMove.wordsPlayed.join(", "),
       points: isValidMove.pointTally,
       score: { computerScore, playerScore },
       skip: false,
@@ -560,7 +580,7 @@ function play(isAI = false) {
     $("#playerScore").text(playerScore);
     history.push({
       isAI: false,
-      word: isValidMove.bestWord,
+      word: isValidMove.bestWord.join(", "),
       points: isValidMove.pointTally,
       score: { computerScore, playerScore },
       skip: false,
@@ -584,7 +604,9 @@ function play(isAI = false) {
       if (bag.length) {
         let { letter, points } = _.pullAt(bag, [0])[0];
         $(`#rack`).append(`
-    <div data-drag=${++lettersUsed} class="tile hot">${letter}<div>${points ? points : ""}</div></div>
+    <div data-drag=${++lettersUsed} class="tile hot ${points ? "" : "blank"}">${letter}<div>${
+          points ? points : ""
+        }</div></div>
     `);
         setDraggable($(`[data-drag="${lettersUsed}"]`));
       }
@@ -717,7 +739,7 @@ function handleBlank(blank) {
     timeout: 0,
     executeClose: false,
   });
-  setModalOptions("static", false);
+  setModalOptions("static", false); //prevents user from closing modal
 
   let addClick = () => {
     $("#closeModal")
@@ -745,7 +767,11 @@ function handleBlank(blank) {
     blank.removeClass("blank");
     blank.addClass("setBlank");
 
+    $("body").addClass("stop-scrolling");
     blank[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    setTimeout(() => {
+      $("body").removeClass("stop-scrolling");
+    }, 500);
 
     toggleModal({
       executeClose: true,
@@ -756,11 +782,42 @@ function handleBlank(blank) {
   });
 }
 
+function showSettings() {
+  toggleModal({
+    executeClose: true,
+  });
+  toggleModal({
+    modal: { class: "text-center", content: "" },
+    modalPlacer: { class: "modal-dialog-centered", content: "" },
+    modalHeader: { class: "d-none", content: "" },
+    title: { class: "", content: `` },
+    body: { class: "mh-100", content: generateSettings() },
+    footer: { class: "justify-content-center", content: "" },
+    actionButton: { class: "saveSettings", content: "Save" },
+    timeout: 0,
+    executeClose: false,
+  });
+
+  $("#difficultyText")
+    .html(rangeValues[convertVal(+$("#difficulty").val())].text)
+    .attr("class", rangeValues[convertVal(+$("#difficulty").val())].class);
+  giveFeedBack();
+
+  $(".saveSettings").click(() => {
+    localStorage.setItem("difficulty", +$("#difficulty").val());
+    toggleModal({
+      executeClose: true,
+    });
+  });
+}
+
 $("#bagBtn").click(showBagContent);
 $("#scoresBtn").click(showScoreHistory);
 $("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
 $("#swapRecall").click(() => ($("#swapRecall").text() == "Swap" ? swap() : recall()));
 $("#passPlay").click(() => ($("#passPlay").text() === "Pass" ? prePass(true, false, false, playersTurn) : play()));
+$("#settingsBtn").click(showSettings);
+
 $("#startGame").click(rematch);
 $("#zoomOut").click(zoomOut);
 $("#board .column").dblclick((e) => (isZoomed ? zoomOut() : zoomIn(e.target)));
@@ -845,7 +902,11 @@ $(".column").droppable({
     });
 
     zoomIn();
+    $("body").addClass("stop-scrolling");
     tileClone[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    setTimeout(() => {
+      $("body").removeClass("stop-scrolling");
+    }, 500);
   },
 });
 

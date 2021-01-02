@@ -5,11 +5,19 @@
   user-select: none;
 }
 
+.stop-scrolling {
+  position: fixed;
+  margin-top: 0; // override by JS to use acc to curr $(window).scrollTop()
+  width: 100%;
+}
+
 div#frame::-webkit-scrollbar {
   display: none;
 }
 
 div#frame {
+  max-width: 415px;
+  margin: auto;
   overflow: scroll;
   height: 412.5px;
   -ms-overflow-style: none; /* IE and Edge */
@@ -76,6 +84,7 @@ div#board {
 }
 
 div#outer_rack {
+  height: 85px;
   img {
     width: 412px;
   }
@@ -158,6 +167,9 @@ div.tile:active {
 div#actionBar {
   width: 400px;
   margin: auto;
+  button {
+    margin: 8px 10px;
+  }
 }
 
 button#bagBtn {

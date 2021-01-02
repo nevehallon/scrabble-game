@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const { wordFinder, wordTrieStr, reverseWordTrieStr } = require("./wordFinder");
 
 const app = express();
+app.use(helmet());
 app.use(cors());
 
 // corsOptions = {
