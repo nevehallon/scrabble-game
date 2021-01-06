@@ -15,7 +15,7 @@ import { calcPcMove } from "./compute.js";
 import { gridState, updateGameState, cleanTheGrid } from "./createGrid.js";
 import validate from "./boardValidator.js";
 // ?  temp1.forEach((x,i) => console.log(trie().hasWord(x), i))
-window.toggleModal = toggleModal; //? uncomment to let method be available in console
+// window.toggleModal = toggleModal; //? uncomment to let method be available in console
 
 const DEBUG_MODE = false; //? change to true for the AI to play it self
 
