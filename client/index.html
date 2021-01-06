@@ -273,7 +273,7 @@
 
     <div id="actionBar" class="d-flex flex-wrap justify-content-around">
       <button class="btn btn-sm font-weight-bold" id="bagBtn">100</button>
-      <button class="btn btn-outline-dark p-0 px-1 font-weight-bold" id="scoresBtn">
+      <button class="btn btn-dark p-0 px-1 font-weight-bold" id="scoresBtn">
         <div class="d-flex justify-content-between">
           <span>player:</span><span id="playerScore">0</span>
         </div>
@@ -281,10 +281,26 @@
           <span>pc:</span><span id="pcScore">0</span>
         </div>
       </button>
-      <button id="mix" class="btn btn-info">Mix</button>
+      <button id="mix" class="btn btn-info">
+        <svg data-src="https://s.svgbox.net/materialui.svg?ic=sync" width="25" height="25" fill="currentColor"></svg>
+        Mix
+      </button>
       <!-- <button id="zoomOut" class="btn btn-warning">Zoom Out</button> -->
-      <button id="swapRecall" class="btn btn-secondary">Swap</button>
-      <button id="settingsBtn" class="btn btn-dark">Settings</button>
+      <button id="swapRecall" class="btn btn-secondary">
+        <svg data-src="https://s.svgbox.net/materialui.svg?ic=swap_vertical_circle" width="25" height="25" fill="currentColor"></svg>
+        Swap
+      </button>
+      <button id="settingsBtn" class="btn btn-dark">
+        <svg data-src="https://s.svgbox.net/materialui.svg?ic=settings" width="32" height="32" fill="currentColor"></svg>
+        Settings
+      </button>
+      <button class="btn btn-dark" id="zoomOut">
+        <svg data-src="https://s.svgbox.net/hero-outline.svg?ic=zoom-out" width="25" height="25" stroke="currentColor"></svg>
+      </button>
+      <button class="btn btn-dark" id="zoomIn">
+        <svg data-src="https://s.svgbox.net/hero-outline.svg?ic=zoom-in" width="25" height="25" stroke="currentColor"></svg>
+      </button>
+
       <button id="passPlay" class="btn btn-primary">Pass</button>
 
     </div>

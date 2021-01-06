@@ -15,6 +15,7 @@ function generateTable(history) {
                 <td>0</td>
                 <td>0</td>
             </tr>`;
+
   history.forEach((x, i) => {
     let played = `${x.word} <b>[+${x.points}]</b>`;
     // prettier-ignore

@@ -191,10 +191,10 @@ function zoomIn(elm) {
     bigTile($("#board .tile"));
     isZoomed = true;
     if (elm) {
-      $("body").addClass("stop-scrolling");
+      // $("body").addClass("stop-scrolling");
       elm.scrollIntoView({ block: "center", inline: "center" });
       setTimeout(() => {
-        $("body").removeClass("stop-scrolling");
+        // $("body").removeClass("stop-scrolling");
       }, 500);
     }
   }
@@ -214,10 +214,29 @@ function zoomOut() {
   smallTile($("#board .tile"));
   isZoomed = false;
 }
-
+let loaderShown = false;
 let serverCheck = async () => {
+  if (!loaderShown) {
+    loaderShown = true;
+    toggleModal({
+      modal: { class: "", content: "" },
+      modalPlacer: { class: "modal-dialog-centered", content: "" },
+      title: { class: "", content: "Loading Resources..." },
+      body: {
+        class: "text-center",
+        content: `<div class="spinner-container my-2"><svg class="spinner" data-src="https://s.svgbox.net/loaders.svg?ic=circles" fill="currentColor"></svg></div>`,
+      },
+      footer: { class: "d-none", content: "" },
+      actionButton: { class: "", content: "" },
+      timeout: 0,
+      executeClose: false,
+    });
+  }
   let status = await checkServerStatus();
   if (status) {
+    toggleModal({
+      executeClose: true,
+    });
     return startGame();
   }
   setTimeout(() => {
@@ -532,13 +551,15 @@ function prePass(wasClicked, isSwap, isAI, legalClick) {
     timeout: 0,
     executeClose: false,
   });
-  $(".doPass").click((e) => {
-    toggleModal({
-      executeClose: true,
+  $(".doPass")
+    .off("click")
+    .click((e) => {
+      toggleModal({
+        executeClose: true,
+      });
+      pass(wasClicked, isSwap, isAI, legalClick);
+      e.stopImmediatePropagation();
     });
-    pass(wasClicked, isSwap, isAI, legalClick);
-    e.stopImmediatePropagation();
-  });
 }
 
 function play(isAI = false) {
@@ -578,6 +599,7 @@ function play(isAI = false) {
   if (playersTurn) {
     playerScore += isValidMove.pointTally;
     $("#playerScore").text(playerScore);
+
     history.push({
       isAI: false,
       word: isValidMove.bestWord.join(", "),
@@ -767,10 +789,10 @@ function handleBlank(blank) {
     blank.removeClass("blank");
     blank.addClass("setBlank");
 
-    $("body").addClass("stop-scrolling");
+    // $("body").addClass("stop-scrolling");
     blank[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
     setTimeout(() => {
-      $("body").removeClass("stop-scrolling");
+      // $("body").removeClass("stop-scrolling");
     }, 500);
 
     toggleModal({
@@ -803,24 +825,34 @@ function showSettings() {
     .attr("class", rangeValues[convertVal(+$("#difficulty").val())].class);
   giveFeedBack();
 
-  $(".saveSettings").click(() => {
-    localStorage.setItem("difficulty", +$("#difficulty").val());
-    toggleModal({
-      executeClose: true,
+  $(".saveSettings")
+    .off("click")
+    .click(() => {
+      localStorage.setItem("difficulty", +$("#difficulty").val());
+
+      toggleModal({
+        executeClose: true,
+      });
+      e.stopImmediatePropagation();
     });
-  });
 }
 
 $("#bagBtn").click(showBagContent);
 $("#scoresBtn").click(showScoreHistory);
 $("#mix").click(() => ($("#rack .tile").length > 1 ? mix() : undefined));
-$("#swapRecall").click(() => ($("#swapRecall").text() == "Swap" ? swap() : recall()));
-$("#passPlay").click(() => ($("#passPlay").text() === "Pass" ? prePass(true, false, false, playersTurn) : play()));
+$("#swapRecall").click(() => ($("#swapRecall").text().includes("Swap") ? swap() : recall()));
+$("#passPlay").click(() =>
+  $("#passPlay").text().includes("Pass") ? prePass(true, false, false, playersTurn) : play()
+);
 $("#settingsBtn").click(showSettings);
 
 $("#startGame").click(rematch);
 $("#zoomOut").click(zoomOut);
-$("#board .column").dblclick((e) => (isZoomed ? zoomOut() : zoomIn(e.target)));
+$("#zoomIn").click(() => zoomIn($('[data-location="7,7"]')[0]));
+$("#board .column").dblclick((e) => {
+  isZoomed ? zoomOut() : zoomIn(e.target);
+  e.stopImmediatePropagation();
+});
 
 function setDraggable(x) {
   x.draggable({
@@ -902,10 +934,10 @@ $(".column").droppable({
     });
 
     zoomIn();
-    $("body").addClass("stop-scrolling");
+    // $("body").addClass("stop-scrolling");
     tileClone[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
     setTimeout(() => {
-      $("body").removeClass("stop-scrolling");
+      // $("body").removeClass("stop-scrolling");
     }, 500);
   },
 });
