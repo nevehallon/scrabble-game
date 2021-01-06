@@ -15,19 +15,24 @@ function giveFeedBack() {
   $("#difficulty").on("input change", function () {
     let value = $(this).val();
     $("#difficultyText").html(rangeValues[convertVal(value)].text).attr("class", rangeValues[convertVal(value)].class);
+    $("#difficultyPercentage")
+      .html(((value - 15) * 100) / (65 - 15) + "%")
+      .attr("class", rangeValues[convertVal(value)].class);
   });
 }
 
-function generateSettings(rack) {
+function generateSettings() {
+  let value = +localStorage.getItem("difficulty") || 15;
   let modalContent = `
     <h5 class="mb-3">Settings</h5>
     <h6>Current difficulty:</h6>`;
 
   modalContent += `<div>
     <label id="difficultyText" for="difficulty"></label>
-    <input type="range" class="custom-range" min="15" max="65" step="1" id="difficulty" value="${
-      localStorage.getItem("difficulty") || 15
-    }">
+    <input type="range" class="custom-range" min="15" max="65" step="1" id="difficulty" value="${value}">
+    <div id="difficultyPercentage" class="${rangeValues[convertVal(value)].class}">${
+    ((value - 15) * 100) / (65 - 15)
+  }%</div>
     </div>`;
 
   return modalContent;

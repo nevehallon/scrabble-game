@@ -419,10 +419,6 @@ function swap() {
     modal: { class: "text-center", content: "" },
     modalPlacer: { class: "modal-dialog-centered", content: "" },
     modalHeader: { class: "d-none", content: "" },
-    title: {
-      class: "",
-      content: "",
-    },
     body: {
       class: "mh-100",
       content:
@@ -549,9 +545,9 @@ function pass(wasClicked = false, isSwap, isAI, legalClick) {
 function prePass(wasClicked, isSwap, isAI, legalClick) {
   if (legalClick === false) return;
   toggleModal({
-    modal: { class: "", content: "" },
+    modal: { class: "text-center", content: "" },
     modalPlacer: { class: "modal-dialog-centered", content: "" },
-    title: { class: "d-none", content: "" },
+    modalHeader: { class: "d-none", content: "" },
     body: { class: "", content: "Are you sure you want to pass?" },
     footer: { class: "", content: "" },
     actionButton: { class: "doPass", content: "Confirm" },
@@ -824,7 +820,7 @@ function showSettings() {
 
   $(".saveSettings")
     .off("click")
-    .click(() => {
+    .click((e) => {
       localStorage.setItem("difficulty", +$("#difficulty").val());
 
       toggleModal({
