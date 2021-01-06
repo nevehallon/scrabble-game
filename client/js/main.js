@@ -335,8 +335,8 @@ function pcPlay() {
 function endGame() {
   zoomOut();
   $("#startGame")[0].removeAttribute("disabled");
-  $("#startGame").show();
-  $("#actionBar .btn").not("#scoresBtn, #startGame").css({ "pointer-events": "none" }); //?prevent players from continuing (can still see the score history, and shows a button for a rematch)
+  $("#startGame").removeClass("d-none").show();
+  $("#actionBar .btn").not("#scoresBtn, #startGame").css({ "pointer-events": "none", display: "none" }); //?prevent players from continuing (can still see the score history, and shows a button for a rematch)
 
   $("#board .hot").removeClass(["hot"]).parent().removeClass(["dw", "tw", "dl", "tl"]); //?remove hot tiles from board
 
@@ -394,10 +394,10 @@ function endGame() {
     toggleModal({
       modal: { class: "text-center", content: "" },
       modalPlacer: { class: "modal-dialog-centered", content: "" },
-      title: { class: "", content: `${winner} Won, Good Game` },
+      modalHeader: { class: "d-none", content: `` },
       body: {
         class: "",
-        content: `<div class="text-primary font-weight-bold">Player: ${playerScore}</div><div class="text-danger font-weight-bold">Opponent: ${computerScore}</div>`,
+        content: `<h4 class="mb-2">${winner} Won, Good Game</h4><div class="text-primary font-weight-bold">Player: ${playerScore}</div><div class="text-danger font-weight-bold">Opponent: ${computerScore}</div>`,
       },
       footer: { class: "", content: "" },
       actionButton: { class: "rematch", content: "Rematch" },
