@@ -6,6 +6,10 @@
 }
 
 html {
+  height: 200%;
+}
+
+body {
   background-image: url(https://cdn.pixabay.com/photo/2014/10/04/16/55/wood-cube-473703_960_720.jpg);
   background-position: center;
   background-repeat: no-repeat;
@@ -14,7 +18,7 @@ html {
   overflow-y: hidden;
 }
 
-body {
+div#layer {
   width: max-content;
   margin: 0 auto;
   touch-action: manipulation;

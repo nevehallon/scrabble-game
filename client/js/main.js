@@ -15,7 +15,9 @@ import { calcPcMove } from "./compute.js";
 import { gridState, updateGameState, cleanTheGrid } from "./createGrid.js";
 import validate from "./boardValidator.js";
 // ?  temp1.forEach((x,i) => console.log(trie().hasWord(x), i))
-// window.toggleModal = toggleModal; //? uncomment to let method be available in console
+window.toggleModal = toggleModal; //? uncomment to let method be available in console
+
+const DEBUG_MODE = false; //? change to true for the AI to play it self
 
 let playerScore = 0;
 let computerScore = 0;
@@ -31,8 +33,6 @@ let wordsLogged = [];
 let history = [];
 let rivalRack = [];
 
-const debugging = false; //? change to true for the AI to play it self
-
 let bag = _.shuffle(_.shuffle(letters));
 // bag = _.drop(bag, 86); //? uncomment for doing tests on a shorter game
 
@@ -40,6 +40,11 @@ updateGameState();
 getWordTrieStr();
 
 // getWordValues(); //? use in case that you want to sort sub-anas by score descending
+
+function setModalOptions(backdrop, keyboard) {
+  $("#modal").data("bs.modal")._config.backdrop = backdrop;
+  $("#modal").data("bs.modal")._config.keyboard = keyboard;
+}
 
 function deal2Player() {
   for (let i = 0; i < 7; i++) {
@@ -97,7 +102,7 @@ function startGame() {
     deal2PC();
     playersTurn = true;
     alertStarter("You won the draw and will start");
-    if (debugging) {
+    if (DEBUG_MODE) {
       playersTurn = true;
       pcPlay();
     }
@@ -221,22 +226,24 @@ let serverCheck = async () => {
     toggleModal({
       modal: { class: "", content: "" },
       modalPlacer: { class: "modal-dialog-centered", content: "" },
-      title: { class: "", content: "Loading Resources..." },
+      modalHeader: { class: "d-none", content: "" },
       body: {
         class: "text-center",
-        content: `<div class="spinner-container my-2"><svg class="spinner" data-src="https://s.svgbox.net/loaders.svg?ic=circles" fill="currentColor"></svg></div>`,
+        content: `<h4 class="mb-2">Loading Resources...</h4><div class="spinner-container my-2"><svg class="spinner" data-src="https://s.svgbox.net/loaders.svg?ic=circles" fill="currentColor"></svg></div>`,
       },
       footer: { class: "d-none", content: "" },
       actionButton: { class: "", content: "" },
       timeout: 0,
       executeClose: false,
     });
+    setModalOptions("static", false); //prevents user from closing modal
   }
   let status = await checkServerStatus();
   if (status) {
     toggleModal({
       executeClose: true,
     });
+    setModalOptions(true, true);
     return startGame();
   }
   setTimeout(() => {
@@ -312,7 +319,7 @@ function pcPlay() {
       // prettier-ignore
       !isValidMove && rivalRack.length && bag.length ? 
       pcSwap() : isValidMove ? 
-      play(true) : debugging ? 
+      play(true) : DEBUG_MODE ? 
       false : pass(true, false, true);
     } catch (error) {
       if (error?.message?.includes("ranch")) {
@@ -531,11 +538,11 @@ function pass(wasClicked = false, isSwap, isAI, legalClick) {
   //    end game
   if (passCount === 4) return endGame();
   //    allow next turn
-  // if (debugging) firstTurn = false;
+  // if (DEBUG_MODE) firstTurn = false;
   setTimeout(() => {
     if (playersTurn) $("#board .tile").removeClass("pcPlay");
 
-    playersTurn || debugging ? pcPlay() : (playersTurn = true);
+    playersTurn || DEBUG_MODE ? pcPlay() : (playersTurn = true);
   }, 250);
 }
 
@@ -563,7 +570,7 @@ function prePass(wasClicked, isSwap, isAI, legalClick) {
 }
 
 function play(isAI = false) {
-  if (!isValidMove.words && debugging) playersTurn = true;
+  if (!isValidMove.words && DEBUG_MODE) playersTurn = true;
   if (!isValidMove.words) {
     return toggleModal({
       modal: { class: "", content: "" },
@@ -740,12 +747,6 @@ function showScoreHistory() {
   //show list of moves. who played what and how many points were earned
 }
 
-function setModalOptions(backdrop, keyboard) {
-  console.log("works");
-  $("#modal").data("bs.modal")._config.backdrop = backdrop;
-  $("#modal").data("bs.modal")._config.keyboard = keyboard;
-}
-
 function handleBlank(blank) {
   toggleModal({
     executeClose: true,
@@ -789,11 +790,7 @@ function handleBlank(blank) {
     blank.removeClass("blank");
     blank.addClass("setBlank");
 
-    // $("body").addClass("stop-scrolling");
     blank[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-    setTimeout(() => {
-      // $("body").removeClass("stop-scrolling");
-    }, 500);
 
     toggleModal({
       executeClose: true,
