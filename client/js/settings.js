@@ -2,7 +2,7 @@ const rangeValues = {
   1: { text: "Easy - good if you're just starting out.", class: "font-weight-bolder text-success" },
   2: { text: "Normal", class: "font-weight-bolder text-primary" },
   3: { text: "Hard - you want a challenge", class: "font-weight-bolder text-danger" },
-  4: { text: "<u>Insane - All Gas No Breaks!!</u>", class: "font-weight-bolder text-danger text-underline" },
+  4: { text: "<u>Insane - All Gas No Breaks!!</u>", class: "font-weight-bolder text-danger" },
 };
 
 function convertVal(val) {
@@ -22,6 +22,7 @@ function giveFeedBack() {
 }
 
 function generateSettings() {
+  let hints = JSON.parse(localStorage.getItem("hints")) || { show: true };
   let value = +localStorage.getItem("difficulty") || 15;
   let modalContent = `
     <h5 class="mb-3">Settings</h5>
@@ -33,6 +34,9 @@ function generateSettings() {
     <div id="difficultyPercentage" class="${rangeValues[convertVal(value)].class}">${
     ((value - 15) * 100) / (65 - 15)
   }%</div>
+  <hr class="bg-dark w-50 mx-auto" />
+  <label id="hints" for="showHints">Show hints: </label>
+    <input type="checkbox" id="showHints" ${hints.show ? "checked" : ""}>
     </div>`;
 
   return modalContent;

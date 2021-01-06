@@ -33,7 +33,7 @@
 <body>
   <div id="layer">
     <div class="container p-0">
-      <div id="frame">
+      <div id="frame" data-toggle="tooltip" data-placement="top" title="Double click on the board to zoom into square OR to zoom out">
         <div id="board" class="container text-center p-0">
 
           <div class="column square bg-danger tw"></div>
@@ -273,8 +273,8 @@
       </div>
 
       <div id="actionBar" class="d-flex flex-wrap justify-content-around">
-        <button class="btn btn-sm font-weight-bold" id="bagBtn">100</button>
-        <button class="btn btn-dark p-0 px-1 font-weight-bold" id="scoresBtn">
+        <button class="btn btn-sm font-weight-bold" id="bagBtn" data-toggle="tooltip" data-placement="top" title="Click me to see what tiles remain">100</button>
+        <button class="btn btn-dark p-0 px-1 font-weight-bold" id="scoresBtn" data-toggle="tooltip" data-placement="top" title="Click me to see words played and their definitions">
           <div class="d-flex justify-content-between">
             <span>player:</span><span id="playerScore">0</span>
           </div>
@@ -283,27 +283,27 @@
           </div>
         </button>
         <button id="startGame" class="btn btn-success d-none">Rematch</button>
-        <button id="mix" class="btn btn-info">
+        <button id="mix" class="btn btn-info" data-toggle="tooltip" data-placement="top" title="Click me to shuffle the tiles on your rack">
           <svg data-src="https://s.svgbox.net/materialui.svg?ic=sync" width="25" height="25" fill="currentColor"></svg>
           Mix
         </button>
         <!-- <button id="zoomOut" class="btn btn-warning">Zoom Out</button> -->
-        <button id="swapRecall" class="btn btn-secondary">
+        <button id="swapRecall" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Click me to trade in for new letters OR return your unplayed tiles from the board">
           <svg data-src="https://s.svgbox.net/materialui.svg?ic=swap_vertical_circle" width="25" height="25" fill="currentColor"></svg>
           Swap
         </button>
-        <button id="settingsBtn" class="btn btn-dark">
+        <button id="settingsBtn" class="btn btn-dark" data-toggle="tooltip" data-placement="top" title="Click me to check and change game settings">
           <svg data-src="https://s.svgbox.net/materialui.svg?ic=settings" width="32" height="32" fill="currentColor"></svg>
           Settings
         </button>
-        <button class="btn btn-dark" id="zoomOut">
+        <button class="btn btn-dark" id="zoomOut" data-toggle="tooltip" data-placement="top" title="Click me to zoom out and see the whole board">
           <svg data-src="https://s.svgbox.net/hero-outline.svg?ic=zoom-out" width="25" height="25" stroke="currentColor"></svg>
         </button>
-        <button class="btn btn-dark" id="zoomIn">
+        <button class="btn btn-dark" id="zoomIn" data-toggle="tooltip" data-placement="top" title="Click me to zoom in to the center of the board">
           <svg data-src="https://s.svgbox.net/hero-outline.svg?ic=zoom-in" width="25" height="25" stroke="currentColor"></svg>
         </button>
 
-        <button id="passPlay" class="btn btn-primary">Pass</button>
+        <button id="passPlay" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Click me to play a word OR pass your turn">Pass</button>
 
       </div>
 

@@ -32,6 +32,7 @@ let playersTurn = false;
 let wordsLogged = [];
 let history = [];
 let rivalRack = [];
+let hints = JSON.parse(localStorage.getItem("hints")) || { show: true };
 
 let bag = _.shuffle(_.shuffle(letters));
 // bag = _.drop(bag, 86); //? uncomment for doing tests on a shorter game
@@ -40,6 +41,24 @@ updateGameState();
 getWordTrieStr();
 
 // getWordValues(); //? use in case that you want to sort sub-anas by score descending
+if (hints.show) {
+  $('[data-toggle="tooltip"]')
+    .tooltip({
+      trigger: "hover",
+    })
+    .on("click", function () {
+      $(this).tooltip("hide");
+    });
+
+  let arr = $('[data-toggle="tooltip"]').toArray();
+
+  for (let i = 0; i <= arr.length; i++) {
+    setTimeout(function () {
+      $(arr[i - 1]).tooltip("hide");
+      $(arr[i]).tooltip("show");
+    }, i * 4000);
+  }
+}
 
 function setModalOptions(backdrop, keyboard) {
   $("#modal").data("bs.modal")._config.backdrop = backdrop;
@@ -48,7 +67,6 @@ function setModalOptions(backdrop, keyboard) {
 
 function deal2Player() {
   for (let i = 0; i < 7; i++) {
-    // let { letter, points } = { letter: "", points: 0 }; //? uncomment to test player turn with blank tiles
     let { letter, points } = _.pullAt(bag, [0])[0];
     $(`#rack`).append(`
         <div data-drag=${i} class="tile hot ${points ? "" : "blank"}">${letter}<div>${points ? points : ""}</div></div>
@@ -589,7 +607,12 @@ function play(isAI = false) {
     $("#pcScore").text(computerScore);
     history.push({
       isAI: true,
-      word: isValidMove.wordsPlayed.join(", "),
+      word: isValidMove.wordsPlayed
+        .map((x) => {
+          let word = x[0].toUpperCase() + x.slice(1).toLowerCase();
+          return `<a title="See definition for: ${word}" class="text-danger" href="https://www.yourdictionary.com/${x.toLowerCase()}" target="_blank">${word}</a>`;
+        })
+        .join(", "),
       points: isValidMove.pointTally,
       score: { computerScore, playerScore },
       skip: false,
@@ -605,7 +628,12 @@ function play(isAI = false) {
 
     history.push({
       isAI: false,
-      word: isValidMove.bestWord.join(", "),
+      word: isValidMove.bestWord
+        .map((x) => {
+          let word = x[0].toUpperCase() + x.slice(1).toLowerCase();
+          return `<a title="See definition for: ${word}" href="https://www.yourdictionary.com/${x.toLowerCase()}" target="_blank">${word}</a>`;
+        })
+        .join(", "),
       points: isValidMove.pointTally,
       score: { computerScore, playerScore },
       skip: false,
@@ -731,7 +759,12 @@ function showScoreHistory() {
     modalPlacer: { class: "modal-dialog-centered", content: "" },
     modalHeader: { class: "d-none", content: "" },
     title: { class: "", content: `` },
-    body: { class: "", content: generateTable(history) },
+    body: {
+      class: "",
+      content:
+        generateTable(history) +
+        "<div class='text-info font-weight-bolder'><u>* Click on word to see definition *</u></div>",
+    },
     footer: { class: "justify-content-center", content: "" },
     actionButton: { class: "d-none", content: "" },
     timeout: 0,
@@ -822,6 +855,7 @@ function showSettings() {
     .off("click")
     .click((e) => {
       localStorage.setItem("difficulty", +$("#difficulty").val());
+      localStorage.setItem("hints", `{"show": ${$("#showHints")[0].checked}}`);
 
       toggleModal({
         executeClose: true,
