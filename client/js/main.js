@@ -469,24 +469,26 @@ function swap() {
   //    remove chosen letters
   //    pick new letters in exchange and place them on player's rack
   //    take chosen letters and insert in to bag
-  $(".executeSwap").click((e) => {
-    if (!$(".selected").length) return;
-    let { newBag, newRack } = doSwap(bag, $(".selectTile").toArray());
-    bag = newBag;
-    $(`#rack`).empty();
-    newRack.forEach((x) => {
-      $(`#rack`).append(`
+  $(".executeSwap")
+    .off("click")
+    .click((e) => {
+      if (!$(".selected").length) return;
+      let { newBag, newRack } = doSwap(bag, $(".selectTile").toArray());
+      bag = newBag;
+      $(`#rack`).empty();
+      newRack.forEach((x) => {
+        $(`#rack`).append(`
       <div data-drag=${x.drag} class="tile hot ${x.points ? "" : "blank"}">${x.letter}<div>${
-        x.points ? x.points : ""
-      }</div></div>
+          x.points ? x.points : ""
+        }</div></div>
       `);
-      setDraggable($(`[data-drag="${x.drag}"]`));
-      e.stopImmediatePropagation();
-    });
+        setDraggable($(`[data-drag="${x.drag}"]`));
+        e.stopImmediatePropagation();
+      });
 
-    passCount = -1;
-    pass(true, true, false);
-  });
+      passCount = -1;
+      pass(true, true, false);
+    });
 }
 
 function mix() {
