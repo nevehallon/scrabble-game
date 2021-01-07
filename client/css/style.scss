@@ -2,28 +2,33 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 html {
-  height: 200%;
+  height: 100%;
+  transform: scale(1);
 }
-
 body {
-  background-image: url(https://cdn.pixabay.com/photo/2014/10/04/16/55/wood-cube-473703_960_720.jpg);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
   height: 200%;
   overflow-y: hidden;
 }
 
 div#layer {
-  width: max-content;
+  background-image: url(https://cdn.pixabay.com/photo/2014/10/04/16/55/wood-cube-473703_960_720.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100%;
+}
+div#layer2 {
   margin: 0 auto;
   touch-action: manipulation;
   box-shadow: #946f00b0 0 0 20px 50vw;
   background-color: #946f00b0;
-  height: 200%;
+  height: 100%;
 }
 
 div#frame::-webkit-scrollbar {
@@ -149,6 +154,7 @@ div.rackCopy {
 
 div.tile {
   position: relative;
+  cursor: -webkit-grab;
   cursor: grab;
   background: wheat;
   width: 50px;
@@ -171,6 +177,7 @@ div.tile {
 
 div.tile:active {
   margin: 0;
+  cursor: -webkit-grabbing;
   cursor: grabbing;
 }
 
@@ -225,6 +232,17 @@ svg.spinner {
   transform: translateZ(0);
   animation: spin 3s infinite linear alternate-reverse;
 }
+@-webkit-keyframes spin {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.35) rotate(360deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
 @keyframes spin {
   0% {
     transform: scale(1);
@@ -269,6 +287,7 @@ div.blankOptions {
     font-weight: bold;
 
     div.tile {
+      // transform: scale(0.7);
       zoom: 0.7;
     }
   }
@@ -284,4 +303,17 @@ div.blankOptions {
 
 div.setBlank {
   font-style: italic;
+}
+
+.modal-backdrop {
+  width: 100%;
+  height: inherit;
+}
+
+@media (max-width: 415.1px) {
+  html {
+    width: -webkit-max-content;
+    width: -moz-max-content;
+    width: max-content;
+  }
 }

@@ -41,6 +41,12 @@ updateGameState();
 getWordTrieStr();
 
 // getWordValues(); //? use in case that you want to sort sub-anas by score descending
+
+let current = $(window).scrollTop();
+$(window).scroll(function () {
+  $(window).scrollTop(current);
+}); //? make sure that screen doesn't scroll down when zooming
+
 if (hints.show) {
   $('[data-toggle="tooltip"]')
     .tooltip({
@@ -237,6 +243,7 @@ function zoomOut() {
   smallTile($("#board .tile"));
   isZoomed = false;
 }
+
 let loaderShown = false;
 let serverCheck = async () => {
   if (!loaderShown) {
